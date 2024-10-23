@@ -6,7 +6,7 @@
   "scripts": {
     "test": "nodemon app"
   },
-  "author": "\"Ubald Jones L. Tuquib, Beverly Jane Britney Gabutera, Arnel Bongalos, Mark Angelo Templa\"",
+  "author": "Ubald Jones L. Tuquib, Beverly Jane Britney Gabutera, Arnel Bongalos, Mark Angelo Templa",
   "license": "ISC",
   "dependencies": {
     "express": "^4.21.1"
