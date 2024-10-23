@@ -1,12 +1,17 @@
 {
-  "name": "20241_t163_automatic-disbursement-voucher-system",
+  "name": "t163_automatic-disbursement-voucher-system-20241",
   "version": "1.0.0",
   "description": "Automatic Disbursement Voucher System is to streamline and automate the process of generating, and disbursing payment vouchers in real-time to their daily transactions. By implementing the APIs, it helps the system to generate its layout and also the calculation. It simplifies complex workflows by eliminating manual handling, ensuring that disbursement tasks are carried out with greater speed and consistency.",
   "main": "app.js",
   "scripts": {
     "test": "nodemon app"
   },
-  "author": "\"Ubald Jones L. Tuquib, Beverly Jane Britney Gabutera, Arnel Bongalos, Mark Angelo Templa\"",
+  "authors": [
+    "Ubald Jones L. Tuquib",
+    "Beverly Jane Britney Gabutera",
+    "Arnel Bongalos",
+    "Mark Angelo Templa"
+  ],
   "license": "ISC",
   "dependencies": {
     "express": "^4.21.1"
