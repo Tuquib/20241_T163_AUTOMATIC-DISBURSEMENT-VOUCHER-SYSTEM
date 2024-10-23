@@ -5,19 +5,19 @@ const bodyParser = require("body-parser");
 adminRoutes.use(bodyParser.urlencoded({ extended: false }));
 adminRoutes.use(bodyParser.json());
 
-app.post("/admin", (req, res) => {
+adminRoutes.post("/admin", (req, res) => {
   const newAdmin = req.body;
   admin.push(newAdmin);
   res.status(201).send({ status: "Success", newData: Admin });
 });
 
 // Get all admins
-app.get("/admin/all", (req, res) => {
+adminRoutes.get("/admin/all", (req, res) => {
   res.status(200).json(subjects);
 });
 
 // Get admin by ID
-app.get("/admin/i/:id", (req, res) => {
+adminRoutes.get("/admin/i/:id", (req, res) => {
   const id = req.params.id;
   const admin = admins.find((admin) => admin.admin_id == id);
   if (admin) {
@@ -28,7 +28,7 @@ app.get("/admin/i/:id", (req, res) => {
 });
 
 // Get admin by name
-app.get("/admin/n/:name", (req, res) => {
+adminRoutes.get("/admin/n/:name", (req, res) => {
   const name = req.params.name;
   const admin = admins.find((admin) => admin.admin_name == name);
   if (admin) {
@@ -39,7 +39,7 @@ app.get("/admin/n/:name", (req, res) => {
 });
 
 // Delete a admin by ID
-app.delete("/admin/:id", (req, res) => {
+adminRoutes.delete("/admin/:id", (req, res) => {
   const id = req.params.id;
   const index = admins.findIndex((admin) => admin.admin_id == id);
   if (index !== -1) {
@@ -51,7 +51,7 @@ app.delete("/admin/:id", (req, res) => {
 });
 
 // Update a admin by ID
-app.patch("/admin/:id", (req, res) => {
+adminRoutes.patch("/admin/:id", (req, res) => {
   const id = req.params.id;
   const index = admins.findIndex((admin) => admin.admin_id == id);
 
@@ -63,3 +63,5 @@ app.patch("/admin/:id", (req, res) => {
     res.status(404).json({ status: "Error", message: "admin not found" }); //if Error!
   }
 });
+
+module.exports = adminRoutes;
