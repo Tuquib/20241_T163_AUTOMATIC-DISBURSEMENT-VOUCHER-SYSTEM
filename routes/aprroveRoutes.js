@@ -6,12 +6,12 @@ approveRoutes.use(bodyParser.urlencoded({ extended: false }));
 approveRoutes.use(bodyParser.json());
 
 // Add a to Submit
-approveRoutes.post("/vouchers/:id/submit", (req, res) => {});
+approveRoutes.post("/", postSubmit);
 
 // add to aprrove
-approveRoutes.post("/vouchers/:id/approve", (req, res) => {});
+approveRoutes.post("/", postApprove);
 
-// Add to reject
-approveRoutes.post("/vouchers/:id/reject", (req, res) => {});
+// // Add to reject
+approveRoutes.post("/", postReject);
 
 module.exports = approveRoutes;

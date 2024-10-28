@@ -5,11 +5,16 @@ const bodyParser = require("body-parser");
 authenticationRoutes.use(bodyParser.urlencoded({ extended: false }));
 authenticationRoutes.use(bodyParser.json());
 
+// get login of admin and staff
+authenticationRoutes.get("/", getLogin);
+
 // add to login the admin and staff
-authenticationRoutes.post("/auth/login", (req, res) => {});
+authenticationRoutes.post("/", postLogin);
 
 // add to register the admin and staff
-authenticationRoutes.post("/auth/register", (req, res) => {});
+authenticationRoutes.post("/", postRegister);
 
 // add to logout
-authenticationRoutes.post("/auth/logout", (req, res) => {});
+authenticationRoutes.post("/", postLogout);
+
+module.exports = authenticationRoutes;
