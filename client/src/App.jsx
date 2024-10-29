@@ -21,7 +21,7 @@ function App() {
       </header>
       <main className="content">
         <img
-          src="../src/assets/background2.jpg"
+          src="../src/assets/background.png"
           alt="background"
           className="background"
         />
