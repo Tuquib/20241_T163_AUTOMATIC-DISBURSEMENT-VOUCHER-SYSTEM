@@ -4,9 +4,10 @@ import "./index.css";
 import App from "./App.jsx";
 import Login from "./login.jsx";
 import Staff from "./addStaff.jsx";
+import AddTask from "./addtask.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <Staff />
+    <AddTask />
   </StrictMode>
 );

@@ -1,11 +1,9 @@
-import { useState } from "react";
+import * as React from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
     <div className="App">
       <header className="navbar">
@@ -16,7 +14,9 @@ function App() {
           <span className="sub2-text">Automatic Disbursement Voucher</span>
         </div>
         <nav className="nav-links">
-          <button className="login-btn">Login</button>
+          <a href="login.jsx">
+            <button className="login-btn">Login</button>
+          </a>
         </nav>
       </header>
       <main className="content">
