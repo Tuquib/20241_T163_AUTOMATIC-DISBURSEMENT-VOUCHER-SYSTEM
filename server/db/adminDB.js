@@ -1,16 +1,21 @@
-const admins = [
-  {
-    id: 1,
-    name: "Juditha Pagaran",
-    position: "University Accountant",
-    email: "accountant@buksu.edu.ph",
-  },
-  {
-    id: 2,
-    name: "Bob Smith",
-    position: "Assistant University Accountant",
-    email: "accountant@buksu.edu.ph",
-  },
-];
+import mongoose from 'mongoose'
+const Schema = mongoose.Schema;
 
-module.exports = admins;
+const studentSchema = new Schema({
+    name: {
+        type: String,
+        required: true,
+    },
+    position: {
+        type: String,
+        required: true,
+    },
+    email: {
+        type: String,
+        required: true,
+    }
+    
+});
+
+const studentModel = mongoose.model('staff', studentSchema);
+export default studentModel;

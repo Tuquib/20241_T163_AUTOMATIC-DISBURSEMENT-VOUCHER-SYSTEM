@@ -1,4 +1,4 @@
-const staffsController = require("../db/staffDB");
+const staffsController = require("../model/staffDB");
 
 // Get all staff
 const getStaffs = async (req, res) => {
