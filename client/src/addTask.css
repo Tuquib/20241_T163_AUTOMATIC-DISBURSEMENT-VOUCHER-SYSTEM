@@ -67,7 +67,7 @@
 .layout {
   display: flex;
   height: 100%;
-  margin-top: 4rem; /* Space for navbar */
+  margin-top: 4rem;
 }
 
 .sidebar {

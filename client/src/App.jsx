@@ -7,10 +7,10 @@ import "./App.css";
 
 function App() {
   const [count, setCount] = useState(0);
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   const handleLoginClick = () => {
-    navigate("/login"); // Navigate to the Login route when button is clicked
+    navigate("/login");
   };
 
   return (

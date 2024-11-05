@@ -4,13 +4,13 @@ import TextField from "@mui/material/TextField";
 import { useNavigate } from "react-router-dom";
 
 function Staff() {
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   const handleStaffClick = () => {
-    navigate("/addTask"); // Navigate to the Login route when button is clicked
+    navigate("/addTask");
   };
   const handleLogoutClick = () => {
-    navigate("/"); // Navigate to the Login route when button is clicked
+    navigate("/");
   };
   return (
     <div className="App">

@@ -7,10 +7,10 @@ import GoogleIcon from "@mui/icons-material/Google";
 import "./login.css";
 
 function Login() {
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   const handleStaffClick = () => {
-    navigate("/addStaff"); // Navigate to the Login route when button is clicked
+    navigate("/addStaff");
   };
 
   return (
