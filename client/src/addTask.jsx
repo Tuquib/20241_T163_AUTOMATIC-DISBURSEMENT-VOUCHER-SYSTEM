@@ -1,19 +1,32 @@
 import * as React from "react";
 import TextField from "@mui/material/TextField";
 import "./addTask.css";
+import { useNavigate } from "react-router-dom";
 
 function AddTask() {
+  const navigate = useNavigate(); // Initialize useNavigate
+
+  const handleStaffClick = () => {
+    navigate("/addStaff"); // Navigate to the Login route when button is clicked
+  };
+
+  const handleLogoutClick = () => {
+    navigate("/"); // Navigate to the Login route when button is clicked
+  };
+
   return (
     <div className="AddTask">
       <header className="navbar">
         <img src="../src/assets/Buksu_logo.png" alt="logo" className="logo" />
         <div className="text-container">
           <span className="logo-text">Bukidnon State University</span>
-          <span className="sub-text">Acounting Office</span>
+          <span className="sub-text">Accounting Office</span>
           <span className="sub2-text">Automatic Disbursement Voucher</span>
         </div>
         <nav className="nav-links">
-          <button className="logout-btn">Logout</button>
+          <button className="logout-btn" onClick={handleLogoutClick}>
+            Logout
+          </button>
         </nav>
       </header>
       <div className="layout">
@@ -21,7 +34,9 @@ function AddTask() {
           <button className="sidebar-btn">Dashboard</button>
           <button className="sidebar-btn">Manage</button>
           <button className="sidebar-btn">Add Task</button>
-          <button className="sidebar-btn">Add Staff</button>
+          <button className="sidebar-btn" onClick={handleStaffClick}>
+            Add Staff
+          </button>
           <button className="sidebar-btn">Google Drive</button>
         </aside>
         <main className="content">

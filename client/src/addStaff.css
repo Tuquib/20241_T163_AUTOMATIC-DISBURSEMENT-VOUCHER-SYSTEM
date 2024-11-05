@@ -147,15 +147,6 @@
   max-width: 400px;
 }
 
-.staff-form input {
-  background-color: white; /* Sets background to white */
-  color: #333;
-  padding: 0.75rem;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
 .add-btn {
   margin-left: 170px;
   width: 100px;

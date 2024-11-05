@@ -1,25 +1,39 @@
 import * as React from "react";
 import "./addStaff.css";
+import TextField from "@mui/material/TextField";
+import { useNavigate } from "react-router-dom";
 
 function Staff() {
+  const navigate = useNavigate(); // Initialize useNavigate
+
+  const handleStaffClick = () => {
+    navigate("/addTask"); // Navigate to the Login route when button is clicked
+  };
+  const handleLogoutClick = () => {
+    navigate("/"); // Navigate to the Login route when button is clicked
+  };
   return (
     <div className="App">
       <header className="navbar">
         <img src="../src/assets/Buksu_logo.png" alt="logo" className="logo" />
         <div className="text-container">
           <span className="logo-text">Bukidnon State University</span>
-          <span className="sub-text">Acounting Office</span>
+          <span className="sub-text">Accounting Office</span>
           <span className="sub2-text">Automatic Disbursement Voucher</span>
         </div>
         <nav className="nav-links">
-          <button className="logout-btn">Logout</button>
+          <button className="logout-btn" onClick={handleLogoutClick}>
+            Logout
+          </button>
         </nav>
       </header>
       <div className="layout">
         <aside className="sidebar">
           <button className="sidebar-btn">Dashboard</button>
           <button className="sidebar-btn">Manage</button>
-          <button className="sidebar-btn">Add Task</button>
+          <button className="sidebar-btn" onClick={handleStaffClick}>
+            Add Task
+          </button>
           <button className="sidebar-btn">Add Staff</button>
           <button className="sidebar-btn">Google Drive</button>
         </aside>
@@ -28,12 +42,30 @@ function Staff() {
           <div className="form-card">
             <form className="staff-form">
               <div className="form-row">
-                <input type="text" placeholder="Name" required />
-                <input type="text" placeholder="Position" required />
+                <TextField
+                  id="standard-basic"
+                  label="Name"
+                  variant="standard"
+                />
+                <TextField
+                  id="standard-basic"
+                  label="Position"
+                  variant="standard"
+                />
               </div>
               <div className="form-row">
-                <input type="tel" placeholder="Contact Number" required />
-                <input type="email" placeholder="Email Address" required />
+                <TextField
+                  className="payee"
+                  id="standard-basic"
+                  label="Contact Number"
+                  variant="standard"
+                />
+                <TextField
+                  className="payee"
+                  id="standard-basic"
+                  label="Email"
+                  variant="standard"
+                />
               </div>
               <button type="submit" className="add-btn">
                 Add
