@@ -14,6 +14,8 @@ adminRoutes.get("/", getAdmins);
 
 adminRoutes.get("/:id", getAdmin);
 
+adminRoutes.get("/:id", getAdmin);
+
 adminRoutes.patch("/:id", updateAdmin);
 
 adminRoutes.delete("/:id", deleteAdmin);

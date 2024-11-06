@@ -1,12 +1,13 @@
 import * as React from "react";
 import TextField from "@mui/material/TextField";
-import "./addStaff.css";
+import "./addTask.css";
+import { useNavigate } from "react-router-dom";
 
-function Staff() {
+function AddTask() {
   const navigate = useNavigate(); // Initialize useNavigate
 
-  const handleTaskClick = () => {
-    navigate("/addTask"); // Navigate to the Login route when button is clicked
+  const handleStaffClick = () => {
+    navigate("/addStaff"); // Navigate to the Login route when button is clicked
   };
 
   const handleLogoutClick = () => {
@@ -14,12 +15,12 @@ function Staff() {
   };
 
   return (
-    <div className="App">
+    <div className="AddTask">
       <header className="navbar">
         <img src="../src/assets/Buksu_logo.png" alt="logo" className="logo" />
         <div className="text-container">
           <span className="logo-text">Bukidnon State University</span>
-          <span className="sub-text">Acounting Office</span>
+          <span className="sub-text">Accounting Office</span>
           <span className="sub2-text">Automatic Disbursement Voucher</span>
         </div>
         <nav className="nav-links">
@@ -32,44 +33,42 @@ function Staff() {
         <aside className="sidebar">
           <button className="sidebar-btn">Dashboard</button>
           <button className="sidebar-btn">Manage</button>
-          <button className="sidebar-btn" onClick={handleTaskClick}>
-            Add Task
+          <button className="sidebar-btn">Add Task</button>
+          <button className="sidebar-btn" onClick={handleStaffClick}>
+            Add Staff
           </button>
-          <button className="sidebar-btn">Add Staff</button>
           <button className="sidebar-btn">Google Drive</button>
         </aside>
         <main className="content">
-          <h1 className="form-title">Add Staff</h1>
+          <h1 className="form-title">Add Task</h1>
           <div className="form-card">
-            <form className="staff-form">
+            <form className="task-form">
               <div className="form-row">
                 <TextField
+                  className="payee"
                   id="standard-basic"
-                  label="Name"
+                  label="Payee Name"
                   variant="standard"
                 />
                 <TextField
+                  className="type"
                   id="standard-basic"
-                  label="Position"
+                  label="Type"
                   variant="standard"
                 />
               </div>
               <div className="form-row">
-                <TextField
-                  className="payee"
-                  id="standard-basic"
-                  label="Contact Number"
-                  variant="standard"
-                />
-                <TextField
-                  className="payee"
-                  id="standard-basic"
-                  label="Email"
-                  variant="standard"
+                <label className="form-label">Date and Time</label>
+                <input
+                  className="dateTime"
+                  type="datetime-local"
+                  form="form-control"
+                  placeholder="Date and Time"
+                  required
                 />
               </div>
               <button type="submit" className="add-btn">
-                Add
+                Send
               </button>
             </form>
           </div>
@@ -79,4 +78,4 @@ function Staff() {
   );
 }
 
-export default Staff;
+export default AddTask;

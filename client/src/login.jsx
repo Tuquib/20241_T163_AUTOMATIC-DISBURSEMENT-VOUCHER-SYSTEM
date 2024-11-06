@@ -1,66 +1,22 @@
-import * as React from "react";
-import React, { useState, useEffect } from 'react';
-import Button from "@mui/material/Button";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import GoogleIcon from "@mui/icons-material/Google";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./login.css";
 
 const Login = () => {
+  const navigate = useNavigate(); // Initialize useNavigate
 
-  const [admin, setAdmins] = useState([]);
-  const [newAdmin, setNewAdmin] = useState({
-    name: '',
-    position: '',
-    email: '',
-  });
-  const [updateAdmin, setUpdateAdmin] = useState({
-    id: '',
-    name: '',
-    position: '',
-    email: '',
-  });
-  const [deleteId, setDeleteId] = useState('');
+  const handleStaffClick = () => {
+    navigate("/addStaff"); // Navigate to the Login route when button is clicked
+  };
 
-  // Update student (PATCH)
-  const handleUpdateAdmin = async (e) => {
-    e.preventDefault();
+  const googleAuth = () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/admin/${updateAdmin.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(updateAdmin)
-      });
-      if (!response.ok) {
-        throw new Error('Failed to update student');
-      }
-      await fetchStudents();
-      setUpdateStudent({ id: '', name: '', position: '', email: ''});
+      window.open("http://localhost:8080/auth/google", "_self");
     } catch (error) {
-      console.error('Error updating admin:', error);
+      console.error("Google authentication failed:", error);
     }
   };
 
-  // Delete student (DELETE)
-  const handleDeleteAdmin = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch(`http://localhost:8000/api/admin${deleteId}`, {
-        method: 'DELETE'
-      });
-      if (!response.ok) {
-        throw new Error('Failed to delete admin');
-      }
-      await fetchAdmin();
-      setDeleteId('');
-    } catch (error) {
-      console.error('Error deleting admin:', error);
-    }
-  };
-
-function Login() {
   return (
     <div className="App">
       <header className="navbar">
@@ -74,37 +30,36 @@ function Login() {
           <button className="login-btn">Login</button>
         </nav>
       </header>
-      <main className="content">
+      <main className="cont">
         <img
           src="../src/assets/background.png"
           alt="background"
-          className="background"
+          className="bg"
         />
         <div className="login-card">
-          <h2>Sign Up</h2>
+          <h2>Sign In</h2>
           <form>
             <label>Email</label>
-            <input type="email" placeholder="Enter your email" required />
+            <input type="email" placeholder="Enter your email" />
             <label>Password</label>
-            <input type="password" placeholder="Enter your password" required />
-            <button type="submit" className="submit-btn">
+            <input type="password" placeholder="Enter your password" />
+            <button
+              type="submit"
+              className="submit-btn"
+              onClick={handleStaffClick}
+            >
               Login
             </button>
 
             <label style={{ marginTop: "0.5rem" }}>Continue with:</label>
-            <Button
-              className="google-btn"
-              variant="outlined"
-              startIcon={<GoogleIcon />}
-              sx={{ marginTop: "0.5rem" }}
-            >
-              Google
-            </Button>
+            <button className="google_btn" onClick={googleAuth}>
+              <img src="../src/assets/google.png" alt="google icon" />
+              <span>Sign in with Google</span>
+            </button>
           </form>
         </div>
       </main>
     </div>
   );
-}
-}
+};
 export default Login;

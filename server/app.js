@@ -1,21 +1,32 @@
+require("dotenv").config();
 const express = require("express");
+const cors = require("cors");
+const passport = require("passport");
+const authRoute = require("./routes/auth");
+const cookieSession = require("cookie-session");
+const passportStrategy = require("./passport");
 const app = express();
 
-const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(
+  cookieSession({
+    name: "session",
+    keys: ["ADVS API"],
+    maxAge: 24 * 60 * 60 * 100,
+  })
+);
 
-// Importing route files
-const adminRoutes = require("./routes/adminRoutes");
-const staffRoutes = require("./routes/staffRoutes");
+app.use(passport.initialize());
+app.use(passport.session());
 
-// Middleware to parse JSON requests
-app.use(express.json());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    methods: "GET,POST,PUT,DELETE",
+    credentials: true,
+  })
+);
 
-// Using the imported routes
-app.use("admin", adminRoutes);
-app.use("staff", staffRoutes);
+app.use("/auth", authRoute);
 
-// Start the server
-
-app.listen(3000);
+const port = process.env.PORT || 8080;
+app.listen(port, () => console.log(`Listenting on port ${port}...`));
