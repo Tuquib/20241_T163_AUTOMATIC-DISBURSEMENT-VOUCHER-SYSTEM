@@ -1,38 +1,49 @@
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const passport = require("passport");
-const authRoute = require("./routes/auth");
-const cookieSession = require("cookie-session");
-const passportStrategy = require("./passport");
+import dotenv from "dotenv";
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+
+// Load environment variables
+dotenv.config();
+
 const app = express();
 
-app.use(
-  cookieSession({
-    name: "session",
-    keys: ["ADVS API"],
-    maxAge: 24 * 60 * 60 * 1000, // Correct maxAge to one day in ms
-  })
-);
+// Check if MONGODB environment variable is defined
+if (!process.env.MONGODB) {
+  console.error("MongoDB connection string (MONGODB) is missing in .env");
+  process.exit(1); // Exit if MONGODB is not provided
+}
 
-// Debugging middleware for session inspection
-app.use((req, res, next) => {
-  console.log("Session:", req.session);
-  next();
+app.use(cors());
+
+// Middleware to parse JSON requests
+app.use(express.json());
+
+// Import and use routes
+import staffRoutes from "./routes/staffRoutes.js";
+app.use("/api", staffRoutes);
+
+// MongoDB connection
+mongoose
+  .connect(process.env.MONGODB) // Removed deprecated options
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((error) => console.error("MongoDB connection error:", error));
+
+// Set the port
+const PORT = process.env.PORT || 8000;
+
+// Start server
+const server = app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
 
-app.use(passport.initialize());
-app.use(passport.session());
-
-app.use(
-  cors({
-    origin: "http://localhost:3000",
-    methods: "GET,POST,PUT,DELETE",
-    credentials: true, // Required for cookies in cross-origin requests
-  })
-);
-
-app.use("/auth", authRoute);
-
-const port = process.env.PORT || 8080;
-app.listen(port, () => console.log(`Listening on port ${port}...`));
+// Graceful shutdown
+process.on("SIGINT", () => {
+  console.log("Shutting down server...");
+  server.close(() => {
+    mongoose.connection.close(false, () => {
+      console.log("MongoDB connection closed.");
+      process.exit(0);
+    });
+  });
+});

@@ -49,17 +49,27 @@
   color: #cccccc;
 }
 
-.google-logout-btn {
-  background-color: #4285f4;
-  color: white;
+.icon-button {
+  background: none;
   border: none;
-  padding: 10px 20px;
+  font-size: 20px;
+  margin-right: 15px;
   cursor: pointer;
-  border-radius: 4px;
 }
 
-.google-logout-btn:hover {
-  background-color: #357ae8;
+.logout-btn {
+  padding: 0.5rem 1rem;
+  background-color: blue;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+  background-color: #0056b3;
 }
 
 .layout {

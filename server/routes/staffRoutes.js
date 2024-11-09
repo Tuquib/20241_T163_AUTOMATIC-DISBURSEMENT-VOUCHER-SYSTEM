@@ -1,23 +1,27 @@
-const express = require("express");
-const staffRoutes = express();
+import express from "express";
+import {
+  getStaffs,
+  getStaff,
+  postStaff,
+  updateStaff,
+  deleteStaff,
+} from "../controller/staffController.js";
 
-//import controller
-const staffs = require("../controller/staffController");
-// use controller
-staffRoutes.use("staffDb", staffs);
+const router = express.Router();
 
-const bodyParser = require("body-parser");
-staffRoutes.use(bodyParser.urlencoded({ extended: false }));
-staffRoutes.use(bodyParser.json());
+// Route to get all staff
+router.get("/staff", getStaffs);
 
-staffRoutes.get("/", getStaffs);
+// Route to get a single staff by ID
+router.get("/staff/:id", getStaff);
 
-staffRoutes.get("/:id", getStaff);
+// Route to create a new staff member
+router.post("/staff", postStaff);
 
-staffRoutes.post("/", postStaff);
+// Route to update an existing staff member by ID
+router.patch("/staff/:id", updateStaff);
 
-staffRoutes.patch("/:id", updateStaff);
+// Route to delete a staff member by ID
+router.delete("/staff/:id", deleteStaff);
 
-staffRoutes.delete("/:id", deleteStaff);
-
-module.exports = staffRoutes;
+export default router;
