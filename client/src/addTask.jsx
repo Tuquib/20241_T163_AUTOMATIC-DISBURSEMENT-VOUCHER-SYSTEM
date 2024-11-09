@@ -7,11 +7,19 @@ function AddTask() {
   const navigate = useNavigate(); // Initialize useNavigate
 
   const handleStaffClick = () => {
-    navigate("/addStaff"); // Navigate to the Login route when button is clicked
+    navigate("/addStaff"); // Navigate to the Staff route when button is clicked
   };
 
   const handleLogoutClick = () => {
-    navigate("/"); // Navigate to the Login route when button is clicked
+    navigate("/"); // Navigate to the Logout route when button is clicked
+  };
+
+  const handleDashboardClick = () => {
+    navigate("/dashboard"); // Navigate to the Dashboard route when button is clicked
+  };
+
+  const handleManageClick = () => {
+    navigate("/manage"); // Navigate to the Manage route when button is clicked
   };
 
   return (
@@ -24,19 +32,15 @@ function AddTask() {
           <span className="sub2-text">Automatic Disbursement Voucher</span>
         </div>
         <nav className="nav-links">
-          <button className="logout-btn" onClick={handleLogoutClick}>
-            Logout
-          </button>
+          <button className="logout-btn" onClick={handleLogoutClick}>Logout</button>
         </nav>
       </header>
       <div className="layout">
         <aside className="sidebar">
-          <button className="sidebar-btn">Dashboard</button>
-          <button className="sidebar-btn">Manage</button>
+          <button className="sidebar-btn" onClick={handleDashboardClick}>Dashboard</button>
+          <button className="sidebar-btn" onClick={handleManageClick}>Manage</button>
           <button className="sidebar-btn">Add Task</button>
-          <button className="sidebar-btn" onClick={handleStaffClick}>
-            Add Staff
-          </button>
+          <button className="sidebar-btn" onClick={handleStaffClick}>Add Staff</button>
           <button className="sidebar-btn">Google Drive</button>
         </aside>
         <main className="content">
@@ -67,9 +71,7 @@ function AddTask() {
                   required
                 />
               </div>
-              <button type="submit" className="add-btn">
-                Send
-              </button>
+              <button type="submit" className="add-btn">Send</button>
             </form>
           </div>
         </main>

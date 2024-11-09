@@ -1,0 +1,122 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  .app {
+    display: flex;
+    font-family: Arial, sans-serif;
+  }
+  
+  .sidebar {
+    width: 250px;
+    background-color: #001a66;
+    color: white;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .logo {
+    width: 100px;
+    margin-bottom: 10px;
+  }
+  
+  .title {
+    font-size: 16px;
+    font-weight: bold;
+  }
+  
+  .sidebar {
+    width: 200px;
+    background-color: #111150;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    position: fixed;
+    top: 5rem; /* Offset for navbar */
+    height: calc(100vh - 5rem); /* Full height minus navbar */
+  }
+  
+  .sidebar-btn {
+    background-color: #363674;
+    color: white;
+    border: none;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    text-align: left;
+    margin-bottom: 0.5rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .sidebar-btn:hover {
+    background-color: #495057;
+  }
+  
+  .content {
+    flex: 1;
+    padding: 20px;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 10px 0;
+  }
+  
+  .icon-button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    margin-right: 15px;
+    cursor: pointer;
+  }
+  
+  .logout-button {
+    padding: 5px 10px;
+    border: none;
+    cursor: pointer;
+    background-color: white;
+    font-size: 16px;
+  }
+  
+  .main-content {
+    margin-top: 20px;
+  }
+  
+  .voucher-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  .voucher-table th, .voucher-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+  }
+  
+  .voucher-table th {
+    background-color: #f2f2f2;
+  }
+  
+  .update-button {
+    background-color: green;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-right: 5px;
+  }
+  
+  .delete-button {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  

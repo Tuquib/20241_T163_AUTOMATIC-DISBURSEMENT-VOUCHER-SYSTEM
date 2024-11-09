@@ -12,6 +12,10 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 function Dashboard() {
   const navigate = useNavigate(); // Initialize useNavigate
 
+  const handleManageClick = () => {
+    navigate("/manage"); // Navigate to the Manage route when button is clicked
+  };
+
   const handleTaskClick = () => {
     navigate("/addTask"); // Navigate to the Login route when button is clicked
   };
@@ -71,7 +75,7 @@ function Dashboard() {
         <div className="text-container">
           <span className="logo-text">Bukidnon State University</span>
           <span className="sub-text">Accounting Office</span>
-          <span className="sub2-text">Automated Disbursement Voucher</span>
+          <span className="sub2-text">Automatic Disbursement Voucher</span>
         </div>
         <nav className="nav-links">
           <button className="logout-btn">Logout</button>
@@ -80,7 +84,7 @@ function Dashboard() {
       <div className="layout">
         <aside className="sidebar">
           <button className="sidebar-btn">Dashboard</button>
-          <button className="sidebar-btn">Manage</button>
+          <button className="sidebar-btn" onClick={handleManageClick}>Manage</button>
           <button className="sidebar-btn" onClick={handleTaskClick}>Add Task</button>
           <button className="sidebar-btn" onClick={handleStaffClick}>Add Staff</button>
           <button className="sidebar-btn">Google Drive</button>
@@ -89,13 +93,15 @@ function Dashboard() {
           <div className="stat-cards">
             <div className="stat-card">
               <h3>Total no. of Staffs</h3>
-              <div className="stat-value">10</div>
+              <div className="stat-value">150</div>
             </div>
             <div className="stat-card">
               <h3>Needed Vouchers Today:</h3>
               <div className="voucher-list">
                 <p>Voucher 1</p>
                 <p>Voucher 2</p>
+                <p>Voucher 3</p>
+                <p>Voucher 4</p>
               </div>
             </div>
             <div className="stat-card">
@@ -107,7 +113,7 @@ function Dashboard() {
           </div>
           <div className="chart-section">
             <h3>Total no. of Voucher in a Year</h3>
-            <div style={{ height: '300px', backgroundColor: 'white', padding: '20px', borderRadius: '10px' }}>
+            <div style={{ height: '300px', backgroundColor: 'white', padding: '20px', borderRadius: '10px'}}>
               <Bar data={yearlyData} options={options} />
             </div>
           </div>

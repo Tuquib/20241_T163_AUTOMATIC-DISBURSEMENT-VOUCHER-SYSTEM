@@ -2,7 +2,6 @@ import * as React from "react";
 import TextField from "@mui/material/TextField";
 import { useNavigate } from "react-router-dom";
 import "./addStaff.css";
-import { useNavigate } from "react-router-dom";
 
 const clientId =
   "1083555345988-qc172fbg8ss4a7ptr55el7enke7g3s4v.apps.googleusercontent.com";
@@ -10,16 +9,20 @@ const clientId =
 function Staff() {
   const navigate = useNavigate(); // Initialize useNavigate
 
-  const onSuccess = () => {
-    console.log("Logout Successfully!");
-  };
-
   const handleTaskClick = () => {
-    navigate("/addTask"); // Navigate to the Login route when button is clicked
+    navigate("/addTask"); // Navigate to the Task route when button is clicked
   };
 
   const handleLogoutClick = () => {
-    navigate("/"); // Navigate to the Login route when button is clicked
+    navigate("/"); // Navigate to the Logout route when button is clicked
+  };
+
+  const handleDashboardClick = () => {
+    navigate("/dashboard"); // Navigate to the Dashboard route when button is clicked
+  };
+
+  const handleManageClick = () => {
+    navigate("/manage"); // Navigate to the Manage route when button is clicked
   };
 
   return (
@@ -28,22 +31,18 @@ function Staff() {
         <img src="../src/assets/Buksu_logo.png" alt="logo" className="logo" />
         <div className="text-container">
           <span className="logo-text">Bukidnon State University</span>
-          <span className="sub-text">Acounting Office</span>
+          <span className="sub-text">Accounting Office</span>
           <span className="sub2-text">Automatic Disbursement Voucher</span>
         </div>
         <nav className="nav-links">
-          <button className="logout-btn" onClick={handleLogoutClick}>
-            Logout
-          </button>
+          <button className="logout-btn" onClick={handleLogoutClick}>Logout</button>
         </nav>
       </header>
       <div className="layout">
         <aside className="sidebar">
-          <button className="sidebar-btn">Dashboard</button>
-          <button className="sidebar-btn">Manage</button>
-          <button className="sidebar-btn" onClick={handleTaskClick}>
-            Add Task
-          </button>
+          <button className="sidebar-btn" onClick={handleDashboardClick}>Dashboard</button>
+          <button className="sidebar-btn" onClick={handleManageClick}>Manage</button>
+          <button className="sidebar-btn" onClick={handleTaskClick}>Add Task</button>
           <button className="sidebar-btn">Add Staff</button>
           <button className="sidebar-btn">Google Drive</button>
         </aside>
@@ -77,9 +76,7 @@ function Staff() {
                   variant="standard"
                 />
               </div>
-              <button type="submit" className="add-btn">
-                Add
-              </button>
+              <button type="submit" className="add-btn">Add</button>
             </form>
           </div>
         </main>

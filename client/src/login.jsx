@@ -13,19 +13,20 @@ function Login() {
 
   const onSuccess = (res) => {
     console.log("Login Success! Current user: ", res.profileObj);
-    navigate("/addStaff");
+    navigate("/dashboard");
+  };
+
+  const onFailure = (res) => {
+    console.log("Login failed! res: ", res);
   };
 
   const handleDashboardClick = () => {
     navigate("/dashboard"); // Navigate to the Login route when button is clicked
   };
 
-  const googleAuth = () => {
-    try {
-      window.open("http://localhost:8080/auth/google", "_self");
-    } catch (error) {
-      console.error("Google authentication failed:", error);
-    }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Submitted: ", email, password);
   };
 
   return (
