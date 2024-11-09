@@ -2,9 +2,17 @@ import * as React from "react";
 import TextField from "@mui/material/TextField";
 import { useNavigate } from "react-router-dom";
 import "./addStaff.css";
+import { useNavigate } from "react-router-dom";
+
+const clientId =
+  "1083555345988-qc172fbg8ss4a7ptr55el7enke7g3s4v.apps.googleusercontent.com";
 
 function Staff() {
   const navigate = useNavigate(); // Initialize useNavigate
+
+  const onSuccess = () => {
+    console.log("Logout Successfully!");
+  };
 
   const handleTaskClick = () => {
     navigate("/addTask"); // Navigate to the Login route when button is clicked

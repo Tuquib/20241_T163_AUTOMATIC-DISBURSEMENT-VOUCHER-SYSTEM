@@ -49,19 +49,17 @@
   color: #cccccc;
 }
 
-.logout-btn {
-  padding: 0.5rem 1rem;
-  background-color: blue;
+.google-logout-btn {
+  background-color: #4285f4;
   color: white;
   border: none;
-  border-radius: 5px;
+  padding: 10px 20px;
   cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s ease;
+  border-radius: 4px;
 }
 
-.logout-btn:hover {
-  background-color: #0056b3;
+.google-logout-btn:hover {
+  background-color: #357ae8;
 }
 
 .layout {
@@ -148,11 +146,9 @@
 }
 
 .staff-form input {
-  background-color: white; /* Sets background to white */
   color: #333;
   padding: 0.75rem;
   font-size: 1rem;
-  border: 1px solid #ccc;
   border-radius: 5px;
 }
 

@@ -1,12 +1,8 @@
 import React from "react";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import "./App.css";
+import "./frontpage.css";
 
-function App() {
-  const [count, setCount] = useState(0);
+function Frontpage() {
   const navigate = useNavigate();
 
   const handleLoginClick = () => {
@@ -38,4 +34,4 @@ function App() {
     </div>
   );
 }
-export default App;
+export default Frontpage;

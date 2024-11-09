@@ -51,16 +51,11 @@ router.get(
   }
 );
 
-// Logout route
+// Logout route with session clearing for cookie-session
 router.get("/logout", (req, res) => {
-  req.logout((err) => {
-    if (err) {
-      console.error("Logout error:", err); // Logs any errors during logout
-      return res.status(500).json({ error: true, message: "Logout error" });
-    }
-    console.log("User logged out");
-    res.redirect("http://localhost:3000"); // Redirect to frontend after logout
-  });
+  req.session = null; // Clears the cookie-session, effectively logging the user out
+  console.log("User logged out");
+  res.redirect("http://localhost:3000"); // Redirect to frontend after logout
 });
 
 module.exports = router;
