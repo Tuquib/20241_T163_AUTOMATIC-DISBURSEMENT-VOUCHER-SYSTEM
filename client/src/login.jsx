@@ -9,6 +9,10 @@ const Login = () => {
     navigate("/addStaff"); // Navigate to the Login route when button is clicked
   };
 
+  const handleDashboardClick = () => {
+    navigate("/dashboard"); // Navigate to the Login route when button is clicked
+  };
+
   const googleAuth = () => {
     try {
       window.open("http://localhost:8080/auth/google", "_self");
@@ -46,7 +50,7 @@ const Login = () => {
             <button
               type="submit"
               className="submit-btn"
-              onClick={handleStaffClick}
+              onClick={handleDashboardClick}
             >
               Login
             </button>
