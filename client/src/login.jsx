@@ -16,7 +16,6 @@ function Login() {
     navigate("/addStaff");
   };
 
-<<<<<<< HEAD
   const handleDashboardClick = () => {
     navigate("/dashboard"); // Navigate to the Login route when button is clicked
   };
@@ -27,15 +26,6 @@ function Login() {
     } catch (error) {
       console.error("Google authentication failed:", error);
     }
-=======
-  const onFailure = (res) => {
-    console.log("Login failed! res: ", res);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Submitted: ", email, password);
->>>>>>> a88c3bee2aeffa580c94a72b59c4ea041748dc8f
   };
 
   return (
@@ -68,22 +58,12 @@ function Login() {
               onChange={(e) => setEmail(e.target.value)}
             />
             <label>Password</label>
-<<<<<<< HEAD
             <input type="password" placeholder="Enter your password" />
             <button
               type="submit"
               className="submit-btn"
               onClick={handleDashboardClick}
             >
-=======
-            <input
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <button type="submit" className="submit-btn">
->>>>>>> a88c3bee2aeffa580c94a72b59c4ea041748dc8f
               Login
             </button>
 
