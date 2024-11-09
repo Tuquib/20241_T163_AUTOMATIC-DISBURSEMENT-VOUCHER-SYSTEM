@@ -3,6 +3,13 @@ import TextField from "@mui/material/TextField";
 import "./addTask.css";
 import { useNavigate } from "react-router-dom";
 
+const clientId =
+  "1083555345988-qc172fbg8ss4a7ptr55el7enke7g3s4v.apps.googleusercontent.com";
+
+const onSuccess = () => {
+  console.log("Logout Successfully!");
+};
+
 function AddTask() {
   const navigate = useNavigate(); // Initialize useNavigate
 
@@ -11,6 +18,8 @@ function AddTask() {
   };
 
   const handleLogoutClick = () => {
+    googleLogout();
+    onSuccess();
     navigate("/"); // Navigate to the Logout route when button is clicked
   };
 
@@ -32,15 +41,25 @@ function AddTask() {
           <span className="sub2-text">Automatic Disbursement Voucher</span>
         </div>
         <nav className="nav-links">
-          <button className="logout-btn" onClick={handleLogoutClick}>Logout</button>
+          <button className="icon-button">👤</button>
+          <button className="icon-button">🔔</button>
+          <button className="logout-btn" onClick={handleLogoutClick}>
+            Logout
+          </button>
         </nav>
       </header>
       <div className="layout">
         <aside className="sidebar">
-          <button className="sidebar-btn" onClick={handleDashboardClick}>Dashboard</button>
-          <button className="sidebar-btn" onClick={handleManageClick}>Manage</button>
+          <button className="sidebar-btn" onClick={handleDashboardClick}>
+            Dashboard
+          </button>
+          <button className="sidebar-btn" onClick={handleManageClick}>
+            Manage
+          </button>
           <button className="sidebar-btn">Add Task</button>
-          <button className="sidebar-btn" onClick={handleStaffClick}>Add Staff</button>
+          <button className="sidebar-btn" onClick={handleStaffClick}>
+            Add Staff
+          </button>
           <button className="sidebar-btn">Google Drive</button>
         </aside>
         <main className="content">
@@ -71,7 +90,9 @@ function AddTask() {
                   required
                 />
               </div>
-              <button type="submit" className="add-btn">Send</button>
+              <button type="submit" className="add-btn">
+                Send
+              </button>
             </form>
           </div>
         </main>

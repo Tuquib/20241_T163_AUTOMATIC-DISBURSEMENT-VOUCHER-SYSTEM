@@ -2,9 +2,14 @@ import * as React from "react";
 import TextField from "@mui/material/TextField";
 import { useNavigate } from "react-router-dom";
 import "./addStaff.css";
+import { googleLogout } from "@react-oauth/google";
 
 const clientId =
   "1083555345988-qc172fbg8ss4a7ptr55el7enke7g3s4v.apps.googleusercontent.com";
+
+const onSuccess = () => {
+  console.log("Logout Successfully!");
+};
 
 function Staff() {
   const navigate = useNavigate(); // Initialize useNavigate
@@ -14,6 +19,8 @@ function Staff() {
   };
 
   const handleLogoutClick = () => {
+    googleLogout();
+    onSuccess();
     navigate("/"); // Navigate to the Logout route when button is clicked
   };
 
@@ -35,14 +42,24 @@ function Staff() {
           <span className="sub2-text">Automatic Disbursement Voucher</span>
         </div>
         <nav className="nav-links">
-          <button className="logout-btn" onClick={handleLogoutClick}>Logout</button>
+          <button className="icon-button">👤</button>
+          <button className="icon-button">🔔</button>
+          <button className="logout-btn" onClick={handleLogoutClick}>
+            Logout
+          </button>
         </nav>
       </header>
       <div className="layout">
         <aside className="sidebar">
-          <button className="sidebar-btn" onClick={handleDashboardClick}>Dashboard</button>
-          <button className="sidebar-btn" onClick={handleManageClick}>Manage</button>
-          <button className="sidebar-btn" onClick={handleTaskClick}>Add Task</button>
+          <button className="sidebar-btn" onClick={handleDashboardClick}>
+            Dashboard
+          </button>
+          <button className="sidebar-btn" onClick={handleManageClick}>
+            Manage
+          </button>
+          <button className="sidebar-btn" onClick={handleTaskClick}>
+            Add Task
+          </button>
           <button className="sidebar-btn">Add Staff</button>
           <button className="sidebar-btn">Google Drive</button>
         </aside>
@@ -76,7 +93,9 @@ function Staff() {
                   variant="standard"
                 />
               </div>
-              <button type="submit" className="add-btn">Add</button>
+              <button type="submit" className="add-btn">
+                Add
+              </button>
             </form>
           </div>
         </main>

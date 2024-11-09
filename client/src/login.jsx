@@ -12,7 +12,10 @@ function Login() {
   const navigate = useNavigate();
 
   const onSuccess = (res) => {
-    console.log("Login Success! Current user: ", res.profileObj);
+    const base64Url = res.credential.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const user = JSON.parse(atob(base64));
+    console.log("Login Successfully!: ", user);
     navigate("/dashboard");
   };
 

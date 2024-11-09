@@ -1,25 +1,35 @@
-import React from 'react';
-import './manage.css';
+import React from "react";
+import "./manage.css";
 import { useNavigate } from "react-router-dom";
+import { googleLogout } from "@react-oauth/google";
+
+const clientId =
+  "1083555345988-qc172fbg8ss4a7ptr55el7enke7g3s4v.apps.googleusercontent.com";
+
+const onSuccess = () => {
+  console.log("Logout Successfully!");
+};
 
 function manage() {
-        const navigate = useNavigate(); // Initialize useNavigate
-      
-        const handleTaskClick = () => {
-          navigate("/addTask"); // Navigate to the Task route when button is clicked
-        };
+  const navigate = useNavigate(); // Initialize useNavigate
 
-        const handleStaffClick = () => {
-            navigate("/addStaff"); // Navigate to the Staff route when button is clicked
-          };
-      
-        const handleLogoutClick = () => {
-          navigate("/"); // Navigate to the Logout route when button is clicked
-        };
-      
-        const handleDashboardClick = () => {
-          navigate("/dashboard"); // Navigate to the Dashboard route when button is clicked
-        };
+  const handleTaskClick = () => {
+    navigate("/addTask"); // Navigate to the Task route when button is clicked
+  };
+
+  const handleStaffClick = () => {
+    navigate("/addStaff"); // Navigate to the Staff route when button is clicked
+  };
+
+  const handleLogoutClick = () => {
+    googleLogout();
+    onSuccess();
+    navigate("/"); // Navigate to the Logout route when button is clicked
+  };
+
+  const handleDashboardClick = () => {
+    navigate("/dashboard"); // Navigate to the Dashboard route when button is clicked
+  };
 
   return (
     <div className="manage">
@@ -30,19 +40,27 @@ function manage() {
           <span className="sub-text">Accounting Office</span>
           <span className="sub2-text">Automatic Disbursement Voucher</span>
         </div>
-        <nav className="nav-links"> 
-        <button className="icon-button">👤</button>
-        <button className="icon-button">🔔</button>
-          <button className="logout-btn" onClick={handleLogoutClick}>Logout</button>
+        <nav className="nav-links">
+          <button className="icon-button">👤</button>
+          <button className="icon-button">🔔</button>
+          <button className="logout-btn" onClick={handleLogoutClick}>
+            Logout
+          </button>
         </nav>
       </header>
       <aside className="sidebar">
-          <button className="sidebar-btn" onClick={handleDashboardClick}>Dashboard</button>
-          <button className="sidebar-btn">Manage</button>
-          <button className="sidebar-btn" onClick={handleTaskClick}>Add Task</button>
-          <button className="sidebar-btn" onClick={handleStaffClick}>Add Staff</button>
-          <button className="sidebar-btn">Google Drive</button>
-        </aside>
+        <button className="sidebar-btn" onClick={handleDashboardClick}>
+          Dashboard
+        </button>
+        <button className="sidebar-btn">Manage</button>
+        <button className="sidebar-btn" onClick={handleTaskClick}>
+          Add Task
+        </button>
+        <button className="sidebar-btn" onClick={handleStaffClick}>
+          Add Staff
+        </button>
+        <button className="sidebar-btn">Google Drive</button>
+      </aside>
       <div className="content">
         <main className="main-content">
           <h2>Voucher Made</h2>
