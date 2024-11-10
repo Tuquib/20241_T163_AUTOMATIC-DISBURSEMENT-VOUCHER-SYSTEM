@@ -1,15 +1,8 @@
 import React from "react";
 import { Bar } from "react-chartjs-2";
 import { useNavigate } from "react-router-dom";
-import "./dashboard.css";
+import "./staffdashboard.css";
 import { googleLogout } from "@react-oauth/google";
-
-const clientId =
-  "1083555345988-qc172fbg8ss4a7ptr55el7enke7g3s4v.apps.googleusercontent.com";
-
-const onSuccess = () => {
-  console.log("Logout Successfully!");
-};
 
 // Import required chart components
 import {
@@ -32,6 +25,13 @@ ChartJS.register(
   Legend
 );
 
+const clientId =
+  "1083555345988-qc172fbg8ss4a7ptr55el7enke7g3s4v.apps.googleusercontent.com";
+
+const onSuccess = () => {
+  console.log("Logout Successfully!");
+};
+
 function Dashboard() {
   const navigate = useNavigate(); // Initialize useNavigate
 
@@ -53,32 +53,13 @@ function Dashboard() {
     navigate("/");
   };
 
-  const weeklyData = [
-    { week: "Week 1", count: 50 },
-    { week: "Week 2", count: 30 },
-    { week: "Week 3", count: 70 },
-    { week: "Week 4", count: 80 },
-  ];
-
-  const yearlyData = {
-    labels: [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ],
+  // Monthly data instead of yearly data
+  const monthlyData = {
+    labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
     datasets: [
       {
         label: "Vouchers",
-        data: [10, 30, 50, 70, 100, 50, 40, 80, 60, 90, 110, 120],
+        data: [50, 30, 70, 80],
         backgroundColor: "teal",
       },
     ],
@@ -141,29 +122,15 @@ function Dashboard() {
         <main className="content">
           <div className="stat-cards">
             <div className="stat-card">
-              <h3>Total no. of Staffs</h3>
-              <div className="stat-value">150</div>
-            </div>
-            <div className="stat-card">
               <h3>Needed Vouchers Today:</h3>
               <div className="voucher-list">
                 <p>Voucher 1</p>
                 <p>Voucher 2</p>
-                <p>Voucher 3</p>
-                <p>Voucher 4</p>
               </div>
-            </div>
-            <div className="stat-card">
-              <h3>Number of Vouchers per Week</h3>
-              {weeklyData.map((item, index) => (
-                <p key={index}>
-                  {item.week}: {item.count}
-                </p>
-              ))}
             </div>
           </div>
           <div className="chart-section">
-            <h3>Total no. of Voucher in a Year</h3>
+            <h3>Monthly Summary of November</h3>
             <div
               style={{
                 height: "300px",
@@ -172,7 +139,7 @@ function Dashboard() {
                 borderRadius: "10px",
               }}
             >
-              <Bar data={yearlyData} options={options} />
+              <Bar data={monthlyData} options={options} />
             </div>
           </div>
         </main>

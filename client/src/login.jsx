@@ -16,7 +16,7 @@ function Login() {
     const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
     const user = JSON.parse(atob(base64));
     console.log("Login Successfully!: ", user);
-    navigate("/staffDashboard");
+    navigate("/dashboard");
   };
 
   const onFailure = (res) => {

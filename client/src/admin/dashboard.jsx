@@ -1,8 +1,16 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { Bar } from "react-chartjs-2";
 import { useNavigate } from "react-router-dom";
 import "./dashboard.css";
 import { googleLogout } from "@react-oauth/google";
+
+const clientId =
+  "1083555345988-qc172fbg8ss4a7ptr55el7enke7g3s4v.apps.googleusercontent.com";
+
+const onSuccess = () => {
+  console.log("Logout Successfully!");
+};
 
 // Import required chart components
 import {
@@ -25,12 +33,6 @@ ChartJS.register(
   Legend
 );
 
-const clientId = "1083555345988-qc172fbg8ss4a7ptr55el7enke7g3s4v.apps.googleusercontent.com";
-
-const onSuccess = () => {
-  console.log("Logout Successfully!");
-};
-
 function Dashboard() {
   const navigate = useNavigate(); // Initialize useNavigate
 
@@ -52,13 +54,32 @@ function Dashboard() {
     navigate("/");
   };
 
-  // Monthly data instead of yearly data
-  const monthlyData = {
-    labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+  const weeklyData = [
+    { week: "Week 1", count: 50 },
+    { week: "Week 2", count: 30 },
+    { week: "Week 3", count: 70 },
+    { week: "Week 4", count: 80 },
+  ];
+
+  const yearlyData = {
+    labels: [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ],
     datasets: [
       {
         label: "Vouchers",
-        data: [50, 30, 70, 80],
+        data: [10, 30, 50, 70, 100, 50, 40, 80, 60, 90, 110, 120],
         backgroundColor: "teal",
       },
     ],
@@ -86,6 +107,22 @@ function Dashboard() {
       },
     },
   };
+
+  const [staffCount, setStaffCount] = useState(0);
+
+  useEffect(() => {
+    // Fetch staff data and calculate the count
+    const fetchStaffCount = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/api/staff");
+        setStaffCount(response.data.length); // Set the count based on the data length
+      } catch (error) {
+        console.error("Error fetching staff count:", error);
+      }
+    };
+
+    fetchStaffCount();
+  }, []);
 
   return (
     <div className="dashboard">
@@ -121,15 +158,29 @@ function Dashboard() {
         <main className="content">
           <div className="stat-cards">
             <div className="stat-card">
+              <h3>Total no. of Staffs</h3>
+              <div className="stat-value">{staffCount}</div>
+            </div>
+            <div className="stat-card">
               <h3>Needed Vouchers Today:</h3>
               <div className="voucher-list">
                 <p>Voucher 1</p>
                 <p>Voucher 2</p>
+                <p>Voucher 3</p>
+                <p>Voucher 4</p>
               </div>
+            </div>
+            <div className="stat-card">
+              <h3>Number of Vouchers per Week</h3>
+              {weeklyData.map((item, index) => (
+                <p key={index}>
+                  {item.week}: {item.count}
+                </p>
+              ))}
             </div>
           </div>
           <div className="chart-section">
-            <h3>Monthly Summary of November</h3>
+            <h3>Total no. of Voucher in a Year</h3>
             <div
               style={{
                 height: "300px",
@@ -138,7 +189,7 @@ function Dashboard() {
                 borderRadius: "10px",
               }}
             >
-              <Bar data={monthlyData} options={options} />
+              <Bar data={yearlyData} options={options} />
             </div>
           </div>
         </main>

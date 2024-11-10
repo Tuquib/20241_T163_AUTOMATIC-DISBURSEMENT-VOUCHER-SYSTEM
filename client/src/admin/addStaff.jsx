@@ -38,7 +38,7 @@ function Staff() {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/staff",
+        "http://localhost:8000/api/staff",
         staffData
       );
       console.log("Staff added:", response.data);
