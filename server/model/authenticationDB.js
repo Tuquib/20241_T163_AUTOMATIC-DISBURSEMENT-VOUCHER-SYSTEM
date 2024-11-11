@@ -1,14 +1,11 @@
 import mongoose from "mongoose";
-const Schema = mongoose.Schema;
 
-const authenticationSchema = new Schema({
-  name: { type: String, required: true },
+// Define the schema for the Task
+const authenticationSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
 });
 
-const authenticationModel = mongoose.model(
-  "authentication",
-  authenticationSchema
-);
-export default authenticationModel;
+const Authentication = mongoose.model("Authentication", authenticationSchema);
+
+export default Authentication;

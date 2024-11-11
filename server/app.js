@@ -22,9 +22,11 @@ app.use(express.json());
 // Import and use routes
 import staffRoutes from "./routes/staffRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
+import authenticationRoutes from "./routes/authenticationRoutes.js";
 
 app.use("/api", taskRoutes);
 app.use("/api", staffRoutes);
+app.use("/api", authenticationRoutes);
 
 // MongoDB connection
 mongoose

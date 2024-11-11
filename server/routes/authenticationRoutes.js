@@ -1,25 +1,27 @@
-const express = require("express");
-const authenticationRoutes = express();
+import express from "express";
+import {
+  getLogins,
+  getLogin,
+  postLogin,
+  updateLogin,
+  deleteLogin,
+} from "../controller/authenticationController.js";
 
-//import controller
-const admins = require("../controller/adminController");
-// use controller
-authenticationRoutes.use("adminController", admins);
+const router = express.Router();
 
-const bodyParser = require("body-parser");
-authenticationRoutes.use(bodyParser.urlencoded({ extended: false }));
-authenticationRoutes.use(bodyParser.json());
+// Route to get all login
+router.get("/login", getLogins);
 
-// get login of admin and staff
-authenticationRoutes.get("/", getLogin);
+// Route to get a single login by ID
+router.get("/login/:id", getLogin);
 
-// add to login the admin and staff
-authenticationRoutes.post("/", postLogin);
+// Route to create a new login member
+router.post("/login", postLogin);
 
-// add to register the admin and staff
-authenticationRoutes.post("/", postRegister);
+// Route to update an existing login member by ID
+router.patch("/login/:id", updateLogin);
 
-// add to logout
-authenticationRoutes.get("/", getLogout);
+// Route to delete a login member by ID
+router.delete("/login/:id", deleteLogin);
 
-module.exports = authenticationRoutes;
+export default router;

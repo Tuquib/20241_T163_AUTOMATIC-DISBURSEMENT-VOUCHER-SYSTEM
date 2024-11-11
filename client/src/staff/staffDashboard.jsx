@@ -35,17 +35,17 @@ const onSuccess = () => {
 function Dashboard() {
   const navigate = useNavigate(); // Initialize useNavigate
 
-  const handleManageClick = () => {
-    navigate("/manage"); // Navigate to the Manage route when button is clicked
-  };
+  // const handleManageClick = () => {
+  //   navigate("/manage"); // Navigate to the Manage route when button is clicked
+  // };
 
-  const handleTaskClick = () => {
-    navigate("/addTask"); // Navigate to the Login route when button is clicked
-  };
+  // const handleTaskClick = () => {
+  //   navigate("/addTask"); // Navigate to the Login route when button is clicked
+  // };
 
-  const handleStaffClick = () => {
-    navigate("/addStaff"); // Navigate to the Login route when button is clicked
-  };
+  // const handleStaffClick = () => {
+  //   navigate("/addStaff"); // Navigate to the Login route when button is clicked
+  // };
 
   const handleLogout = () => {
     googleLogout();
@@ -108,15 +108,8 @@ function Dashboard() {
       <div className="layout">
         <aside className="sidebar">
           <button className="sidebar-btn">Dashboard</button>
-          <button className="sidebar-btn" onClick={handleManageClick}>
-            Manage
-          </button>
-          <button className="sidebar-btn" onClick={handleTaskClick}>
-            Add Task
-          </button>
-          <button className="sidebar-btn" onClick={handleStaffClick}>
-            Add Staff
-          </button>
+          <button className="sidebar-btn">Voucher</button>
+          <button className="sidebar-btn">Task</button>
           <button className="sidebar-btn">Google Drive</button>
         </aside>
         <main className="content">

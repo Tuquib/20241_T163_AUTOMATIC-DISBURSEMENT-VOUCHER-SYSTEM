@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
+import axios from "axios"; // Import axios for making HTTP requests
 import "./login.css";
 
 const clientId =
@@ -23,13 +24,27 @@ function Login() {
     console.log("Login failed! res: ", res);
   };
 
-  const handleDashboardClick = () => {
-    navigate("/dashboard"); // Navigate to the Login route when button is clicked
-  };
-
-  const handleSubmit = (e) => {
+  // Handle manual login form submission
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitted: ", email, password);
+    try {
+      const response = await axios.get("http://localhost:8000/api/login", {
+        email,
+        password,
+      });
+
+      // Handle success response
+      if (response.status === 200) {
+        const { token } = response.data;
+        // Store the token (localStorage, cookie, or state management)
+        localStorage.setItem("token", token); // Example: save token in localStorage
+        console.log("Manual login successful!");
+        navigate("/staffDashboard");
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
+      alert("Login failed. Please check your email and password.");
+    }
   };
 
   return (
@@ -60,17 +75,19 @@ function Login() {
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
             />
             <label>Password</label>
-            <input type="password" placeholder="Enter your password" />
-            <button
-              type="submit"
-              className="submit-btn"
-              onClick={handleDashboardClick}
-            >
+            <input
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <button type="submit" className="submit-btn">
               Login
             </button>
-
             <label style={{ marginTop: "0.5rem" }}>Continue with:</label>
             <GoogleLogin
               clientId={clientId}
