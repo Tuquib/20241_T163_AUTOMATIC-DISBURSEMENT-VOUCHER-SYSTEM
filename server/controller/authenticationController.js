@@ -1,4 +1,5 @@
 import Login from "../model/authenticationDB.js"; // Ensure correct path
+import User from "../model/user.js";
 
 //Get login
 const getLogins = async (req, res) => {
@@ -63,4 +64,28 @@ const deleteLogin = async (req, res) => {
   }
 };
 
-export { getLogins, getLogin, postLogin, updateLogin, deleteLogin };
+const handleGoogleLogin = async (req, res) => {
+  const { googleId, name, email, picture } = req.body;
+  try {
+    console.log("Handling Google login for user:", email);
+    let user = await User.findOne({ googleId });
+    if (!user) {
+      console.log("Creating new user with Google ID:", googleId);
+      user = new User({ googleId, name, email, picture });
+      await user.save();
+    }
+    res.status(200).json({ message: "Login successful", user });
+  } catch (error) {
+    console.error("Google login error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export {
+  getLogins,
+  getLogin,
+  postLogin,
+  updateLogin,
+  deleteLogin,
+  handleGoogleLogin,
+};

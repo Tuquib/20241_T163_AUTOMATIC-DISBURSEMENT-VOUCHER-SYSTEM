@@ -86,9 +86,9 @@ function Staff() {
             Manage
           </button>
           <button className="sidebar-btn" onClick={() => navigate("/addTask")}>
-            Add Task
+            Task
           </button>
-          <button className="sidebar-btn">Add Staff</button>
+          <button className="sidebar-btn">Staff</button>
           <button className="sidebar-btn">Google Drive</button>
         </aside>
         <main className="content">

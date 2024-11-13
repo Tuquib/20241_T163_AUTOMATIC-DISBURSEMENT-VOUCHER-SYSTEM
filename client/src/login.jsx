@@ -3,25 +3,59 @@ import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
 import axios from "axios"; // Import axios for making HTTP requests
 import "./login.css";
+import ReCAPTCHA from "react-google-recaptcha";
 
 const clientId =
   "1083555345988-qc172fbg8ss4a7ptr55el7enke7g3s4v.apps.googleusercontent.com";
+const RECAPTCHA_SITE_KEY = "6LfLiHsqAAAAADCbXE7JlyC2OJSmrON163QlUzrX";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [recaptchaValue, setRecaptchaValue] = useState("");
+
   const navigate = useNavigate();
 
-  const onSuccess = (res) => {
+  const onSuccess = async (res) => {
     const base64Url = res.credential.split(".")[1];
     const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
     const user = JSON.parse(atob(base64));
-    console.log("Login Successfully!: ", user);
-    navigate("/dashboard");
+
+    try {
+      // Send user data to the backend for MongoDB storage
+      const response = await axios.post(
+        "http://localhost:8000/api/google-login",
+        {
+          googleId: user.sub,
+          name: user.name,
+          email: user.email,
+          picture: user.picture,
+        }
+      );
+
+      console.log("Login Successful!:", user);
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Error during Google login:", error);
+      alert("Failed to log in with Google.");
+    }
   };
 
   const onFailure = (res) => {
     console.log("Login failed! res: ", res);
+  };
+
+  const handleLogin = () => {
+    if (recaptchaValue) {
+      // Continue login if reCAPTCHA is solved
+      navigate("/staffDashboard");
+    } else {
+      alert("Please complete the reCAPTCHA verification.");
+    }
+  };
+
+  const handleRecaptchaChange = (value) => {
+    setRecaptchaValue(value);
   };
 
   // Handle manual login form submission
@@ -85,7 +119,13 @@ function Login() {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-            <button type="submit" className="submit-btn">
+
+            <ReCAPTCHA
+              sitekey={RECAPTCHA_SITE_KEY}
+              onChange={handleRecaptchaChange}
+              className="recaptcha"
+            />
+            <button type="submit" className="submit-btn" onClick={handleLogin}>
               Login
             </button>
             <label style={{ marginTop: "0.5rem" }}>Continue with:</label>

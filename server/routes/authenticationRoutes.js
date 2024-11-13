@@ -5,6 +5,7 @@ import {
   postLogin,
   updateLogin,
   deleteLogin,
+  handleGoogleLogin,
 } from "../controller/authenticationController.js";
 
 const router = express.Router();
@@ -23,5 +24,7 @@ router.patch("/login/:id", updateLogin);
 
 // Route to delete a login member by ID
 router.delete("/login/:id", deleteLogin);
+
+router.post("/google-login", handleGoogleLogin);
 
 export default router;

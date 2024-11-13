@@ -148,10 +148,10 @@ function Dashboard() {
             Manage
           </button>
           <button className="sidebar-btn" onClick={handleTaskClick}>
-            Add Task
+            Task
           </button>
           <button className="sidebar-btn" onClick={handleStaffClick}>
-            Add Staff
+            Staff
           </button>
           <button className="sidebar-btn">Google Drive</button>
         </aside>
@@ -179,6 +179,7 @@ function Dashboard() {
               ))}
             </div>
           </div>
+          <br /> <br /> <br /> <br /> <br />
           <div className="chart-section">
             <h3>Total no. of Voucher in a Year</h3>
             <div

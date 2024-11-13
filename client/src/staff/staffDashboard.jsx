@@ -1,7 +1,7 @@
 import React from "react";
 import { Bar } from "react-chartjs-2";
 import { useNavigate } from "react-router-dom";
-import "./staffdashboard.css";
+import "./staffDashboard.css";
 import { googleLogout } from "@react-oauth/google";
 
 // Import required chart components
@@ -34,18 +34,6 @@ const onSuccess = () => {
 
 function Dashboard() {
   const navigate = useNavigate(); // Initialize useNavigate
-
-  // const handleManageClick = () => {
-  //   navigate("/manage"); // Navigate to the Manage route when button is clicked
-  // };
-
-  // const handleTaskClick = () => {
-  //   navigate("/addTask"); // Navigate to the Login route when button is clicked
-  // };
-
-  // const handleStaffClick = () => {
-  //   navigate("/addStaff"); // Navigate to the Login route when button is clicked
-  // };
 
   const handleLogout = () => {
     googleLogout();
@@ -109,19 +97,15 @@ function Dashboard() {
         <aside className="sidebar">
           <button className="sidebar-btn">Dashboard</button>
           <button className="sidebar-btn">Voucher</button>
-          <button className="sidebar-btn">Task</button>
+          <button
+            className="sidebar-btn"
+            onClick={() => navigate("/staffTask")}
+          >
+            Task
+          </button>
           <button className="sidebar-btn">Google Drive</button>
         </aside>
-        <main className="content">
-          <div className="stat-cards">
-            <div className="stat-card">
-              <h3>Needed Vouchers Today:</h3>
-              <div className="voucher-list">
-                <p>Voucher 1</p>
-                <p>Voucher 2</p>
-              </div>
-            </div>
-          </div>
+        <main className="con">
           <div className="chart-section">
             <h3>Monthly Summary of November</h3>
             <div

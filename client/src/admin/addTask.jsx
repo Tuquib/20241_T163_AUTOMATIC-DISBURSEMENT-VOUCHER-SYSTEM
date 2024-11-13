@@ -82,9 +82,9 @@ const AddTask = () => {
           <button className="sidebar-btn" onClick={handleManageClick}>
             Manage
           </button>
-          <button className="sidebar-btn">Add Task</button>
+          <button className="sidebar-btn">Task</button>
           <button className="sidebar-btn" onClick={handleStaffClick}>
-            Add Staff
+            Staff
           </button>
           <button className="sidebar-btn">Google Drive</button>
         </aside>

@@ -1,34 +1,85 @@
+@import url("https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap");
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-.manage {
+.dashboard {
   display: flex;
-  font-family: Arial, sans-serif;
+  flex-direction: column;
+  height: 100vh;
 }
 
-.sidebar {
-  width: 250px;
-  background-color: #001a66;
-  color: white;
-  padding: 20px;
-  text-align: center;
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: #111150;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1;
 }
 
 .logo {
-  width: 100px;
-  margin-bottom: 10px;
+  width: 50px;
+  height: auto;
+  margin-right: 10px;
 }
 
-.title {
-  font-size: 16px;
+.text-container {
+  font-family: "Poppins", sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.logo-text {
+  font-size: 1.5rem;
   font-weight: bold;
+  color: white;
+}
+
+.sub-text,
+.sub2-text {
+  font-size: 1rem;
+  color: #cccccc;
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  margin-right: 15px;
+  cursor: pointer;
+}
+
+.logout-btn {
+  padding: 0.5rem 1rem;
+  background-color: blue;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+  background-color: #0056b3;
+}
+
+.layout {
+  display: flex;
+  height: 100%;
+  margin-top: 4rem;
 }
 
 .sidebar {
-  width: 200px;
+  width: 15.6vw;
   background-color: #111150;
   display: flex;
   flex-direction: column;
@@ -39,8 +90,9 @@
 }
 
 .sidebar-btn {
+  font-family: "Poppins", sans-serif;
   background-color: #363674;
-  color: white;
+  color: whitesmoke;
   border: none;
   font-size: 1rem;
   padding: 0.5rem 1rem;
@@ -55,68 +107,175 @@
   background-color: #495057;
 }
 
-.content {
-  flex: 1;
-  padding: 20px;
-}
-
-.header {
+.managecon {
+  background-color: rgb(117, 145, 215);
+  margin-left: 15.6vw;
+  padding: 2rem;
+  width: calc(100% - 15.6vw); /* Adjusts for sidebar width */
   display: flex;
-  justify-content: flex-end;
+  position: fixed;
+  flex-direction: column;
   align-items: center;
-  padding: 10px 0;
-}
-
-.icon-button {
-  background: none;
-  border: none;
-  font-size: 20px;
-  margin-right: 15px;
-  cursor: pointer;
-}
-
-.logout-button {
-  padding: 5px 10px;
-  border: none;
-  cursor: pointer;
-  background-color: white;
-  font-size: 16px;
-}
-
-.main-content {
-  margin-top: 20px;
-}
-
-.voucher-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-
-.voucher-table th,
-.voucher-table td {
-  border: 1px solid #ddd;
-  padding: 10px;
+  justify-content: center;
+  top: 60px; /* Offset below the navbar */
+  min-height: calc(100vh - 60px); /* Viewport height minus navbar height */
   text-align: center;
 }
 
-.voucher-table th {
-  background-color: #f2f2f2;
+/* Styles for the task card container */
+
+.task-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9; /* Light gray for alternating rows */
 }
 
-.update-button {
-  background-color: green;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  cursor: pointer;
-  margin-right: 5px;
+.task-table tbody tr:hover {
+  background-color: #f1f1f1; /* Slightly darker gray on hover */
 }
 
-.delete-button {
-  background-color: red;
-  color: white;
+.task-table td button {
+  padding: 6px 12px;
   border: none;
-  padding: 5px 10px;
+  border-radius: 4px;
   cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.task-table td button:hover {
+  opacity: 0.8;
+}
+
+.task-table td button:first-of-type {
+  background-color: #4caf50; /* Green for Edit */
+  color: white;
+}
+
+.task-table td button:last-of-type {
+  background-color: #f44336; /* Red for Delete */
+  color: white;
+}
+
+/* Responsive styling */
+@media (max-width: 768px) {
+  .task-card {
+    padding: 15px;
+  }
+
+  .task-table th,
+  .task-table td {
+    padding: 8px;
+    font-size: 0.9rem;
+  }
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 300px;
+  text-align: center;
+}
+
+.modal-content input {
+  background-color: white;
+  color: black;
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+}
+
+.date::-webkit-calendar-picker-indicator {
+  opacity: 1; /* Ensures the icon is visible */
+  cursor: pointer;
+  background-color: black;
+}
+
+.time::-webkit-calendar-picker-indicator {
+  opacity: 1; /* Ensures the icon is visible */
+  cursor: pointer;
+  background-color: black;
+}
+
+.staff-card,
+.task-card {
+  background-color: white;
+  color: black;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 90%;
+  overflow-x: auto; /* Enables horizontal scroll on smaller screens */
+}
+
+.staff-table,
+.task-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-family: sans-serif, "Poppins";
+}
+
+.staff-table th,
+.staff-table td,
+.task-table th,
+.task-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+.staff-table th,
+.task-table th {
+  background-color: #4caf50;
+  color: white;
+  font-weight: bold;
+}
+
+.staff-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9; /* Light gray for alternating rows */
+}
+
+.staff-table tbody tr:hover {
+  background-color: #f1f1f1; /* Slightly darker gray on hover */
+}
+
+.staff-table td button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.staff-table td button:hover {
+  opacity: 0.8;
+}
+
+.staff-table td button:first-of-type {
+  background-color: #4caf50; /* Green for Edit */
+  color: white;
+}
+
+.staff-table td button:last-of-type {
+  background-color: #f44336; /* Red for Delete */
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .staff-card {
+    padding: 15px;
+  }
 }
