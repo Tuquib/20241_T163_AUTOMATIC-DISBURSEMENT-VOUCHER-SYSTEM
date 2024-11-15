@@ -1,79 +1,35 @@
-import React from "react";
-import { Bar } from "react-chartjs-2";
 import { useNavigate } from "react-router-dom";
-import "./staffDashboard.css";
 import { googleLogout } from "@react-oauth/google";
-
-// Import required chart components
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
   Tooltip,
   Legend,
-} from "chart.js";
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
+import "./staffDashboard.css";
 
-// Register components with ChartJS
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
-
-const clientId =
-  "1083555345988-qc172fbg8ss4a7ptr55el7enke7g3s4v.apps.googleusercontent.com";
-
-const onSuccess = () => {
-  console.log("Logout Successfully!");
-};
+const data = [
+  { name: "Week 1", vouchers: 50 },
+  { name: "Week 2", vouchers: 30 },
+  { name: "Week 3", vouchers: 70 },
+  { name: "Week 4", vouchers: 80 },
+];
 
 function Dashboard() {
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     googleLogout();
-    onSuccess();
     navigate("/");
-  };
-
-  // Monthly data instead of yearly data
-  const monthlyData = {
-    labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
-    datasets: [
-      {
-        label: "Vouchers",
-        data: [50, 30, 70, 80],
-        backgroundColor: "teal",
-      },
-    ],
-  };
-
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: true,
-        position: "top",
-      },
-    },
-    scales: {
-      x: {
-        grid: {
-          display: false,
-        },
-      },
-      y: {
-        grid: {
-          color: "rgba(200, 200, 200, 0.3)",
-        },
-      },
-    },
   };
 
   return (
@@ -96,7 +52,9 @@ function Dashboard() {
       <div className="layout">
         <aside className="sidebar">
           <button className="sidebar-btn">Dashboard</button>
-          <button className="sidebar-btn">Voucher</button>
+          <button className="sidebar-btn" onClick={() => navigate("/voucher")}>
+            Voucher
+          </button>
           <button
             className="sidebar-btn"
             onClick={() => navigate("/staffTask")}
@@ -105,18 +63,82 @@ function Dashboard() {
           </button>
           <button className="sidebar-btn">Google Drive</button>
         </aside>
-        <main className="con">
-          <div className="chart-section">
-            <h3>Monthly Summary of November</h3>
-            <div
-              style={{
-                height: "300px",
-                backgroundColor: "white",
-                padding: "20px",
-                borderRadius: "10px",
-              }}
-            >
-              <Bar data={monthlyData} options={options} />
+        <main className="main-container">
+          <div className="main-title">
+            <h3>DASHBOARD</h3>
+            <button className="create-voucher-btn">Create Voucher</button>
+          </div>
+
+          <div className="charts">
+            <div className="chart-card">
+              <h4>Monthly Summary of November</h4>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={data}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="vouchers" fill="#0088FE" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="chart-card">
+              <h4>Weekly Line Chart</h4>
+              <ResponsiveContainer width="100%" height={200}>
+                <LineChart data={data}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="vouchers" stroke="#82ca9d" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="chart-card">
+              <h4>Monthly Pie Chart</h4>
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie
+                    data={data}
+                    dataKey="vouchers"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={60}
+                    fill="#82ca9d"
+                  >
+                    {data.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={
+                          ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"][
+                            index % 4
+                          ]
+                        }
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="chart-card">
+              <h4>Additional Summary Chart</h4>
+              <ResponsiveContainer width="100%" height={200}>
+                <LineChart data={data}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="vouchers" stroke="#8884d8" />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           </div>
         </main>

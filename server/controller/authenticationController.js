@@ -1,5 +1,6 @@
-import Login from "../model/authenticationDB.js"; // Ensure correct path
 import User from "../model/user.js";
+import Login from "../model/authenticationDB.js";
+import bcrypt from "bcrypt";
 
 //Get login
 const getLogins = async (req, res) => {
@@ -14,25 +15,53 @@ const getLogins = async (req, res) => {
 
 //Get login by Id
 const getLogin = async (req, res) => {
+  const { email, password } = req.body; // Get email and password from the request body
+
   try {
-    const login = await Login.findById(req.params.id);
-    if (!login) return res.status(404).send("login not found");
+    // Find the user by email
+    const login = await Login.findOne({ email });
+
+    if (!login) {
+      return res.status(404).send("Login not found. User does not exist.");
+    }
+
+    // Compare the entered password with the stored hashed password
+    const isMatch = await bcrypt.compare(password, login.password);
+
+    if (!isMatch) {
+      return res.status(400).send("Incorrect password.");
+    }
+
+    // If email and password match, return the login data
     res.status(200).json(login);
   } catch (error) {
     console.error(error);
-    res.status(500).send("Error retrieving login");
+    res.status(500).send("Error retrieving login.");
   }
 };
 
-//Create a login
+//Create a login (if this route is still needed)
 const postLogin = async (req, res) => {
+  const { email, password } = req.body;
+
   try {
-    const login = new Login(req.body);
-    const savedlogin = await login.save();
-    res.status(201).json(savedlogin);
+    // Check if user exists in the database
+    const user = await Login.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: "User not registered." });
+    }
+
+    // Compare entered password with the stored hashed password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: "Incorrect password." });
+    }
+
+    // Send success response with token or user data as needed
+    res.status(200).json({ message: "Login successful", token });
   } catch (error) {
-    console.error(error);
-    res.status(400).send("Error saving login");
+    console.error("Error during manual login:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -64,6 +93,7 @@ const deleteLogin = async (req, res) => {
   }
 };
 
+// Google login handler (existing)
 const handleGoogleLogin = async (req, res) => {
   const { googleId, name, email, picture } = req.body;
   try {

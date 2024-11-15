@@ -108,7 +108,7 @@
 }
 
 .taskcon {
-  background-color: rgb(117, 145, 215);
+  background-color: rgb(239, 238, 238);
   margin-left: 15.6vw;
   padding: 2rem;
   width: calc(100% - 15.6vw); /* Adjusts for sidebar width */

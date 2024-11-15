@@ -132,7 +132,7 @@ function Manage() {
   };
 
   return (
-    <div className="dashboard">
+    <div className="manage">
       <header className="navbar">
         <img src="../src/assets/Buksu_logo.png" alt="logo" className="logo" />
         <div className="text-container">

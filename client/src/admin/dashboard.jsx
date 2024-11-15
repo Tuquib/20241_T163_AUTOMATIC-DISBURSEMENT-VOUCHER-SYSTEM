@@ -1,9 +1,27 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Bar } from "react-chartjs-2";
 import { useNavigate } from "react-router-dom";
 import "./dashboard.css";
 import { googleLogout } from "@react-oauth/google";
+import {
+  BsFillArchiveFill,
+  BsFillGrid3X3GapFill,
+  BsPeopleFill,
+  BsFillBellFill,
+} from "react-icons/bs";
+import {
+  BarChart,
+  Bar,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+} from "recharts";
 
 const clientId =
   "1083555345988-qc172fbg8ss4a7ptr55el7enke7g3s4v.apps.googleusercontent.com";
@@ -11,27 +29,6 @@ const clientId =
 const onSuccess = () => {
   console.log("Logout Successfully!");
 };
-
-// Import required chart components
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
-
-// Register components with ChartJS
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
 
 function Dashboard() {
   const navigate = useNavigate(); // Initialize useNavigate
@@ -54,61 +51,53 @@ function Dashboard() {
     navigate("/");
   };
 
-  const weeklyData = [
-    { week: "Week 1", count: 50 },
-    { week: "Week 2", count: 30 },
-    { week: "Week 3", count: 70 },
-    { week: "Week 4", count: 80 },
+  const data = [
+    {
+      name: "Page A",
+      made: 4000,
+      need: 2400,
+      amt: 2400,
+    },
+    {
+      name: "Page B",
+      made: 3000,
+      need: 1398,
+      amt: 2210,
+    },
+    {
+      name: "Page C",
+      made: 2000,
+      need: 9800,
+      amt: 2290,
+    },
+    {
+      name: "Page D",
+      made: 2780,
+      need: 3908,
+      amt: 2000,
+    },
+    {
+      name: "Page E",
+      made: 1890,
+      need: 4800,
+      amt: 2181,
+    },
+    {
+      name: "Page F",
+      made: 2390,
+      need: 3800,
+      amt: 2500,
+    },
+    {
+      name: "Page G",
+      made: 3490,
+      need: 4300,
+      amt: 2100,
+    },
   ];
 
-  const yearlyData = {
-    labels: [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ],
-    datasets: [
-      {
-        label: "Vouchers",
-        data: [10, 30, 50, 70, 100, 50, 40, 80, 60, 90, 110, 120],
-        backgroundColor: "teal",
-      },
-    ],
-  };
-
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: true,
-        position: "top",
-      },
-    },
-    scales: {
-      x: {
-        grid: {
-          display: false,
-        },
-      },
-      y: {
-        grid: {
-          color: "rgba(200, 200, 200, 0.3)",
-        },
-      },
-    },
-  };
-
   const [staffCount, setStaffCount] = useState(0);
+  const [taskCount, setTaskCount] = useState(0);
 
   useEffect(() => {
     // Fetch staff data and calculate the count
@@ -122,6 +111,20 @@ function Dashboard() {
     };
 
     fetchStaffCount();
+  }, []);
+
+  useEffect(() => {
+    // Fetch staff data and calculate the count
+    const fetchTaskCount = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/api/task");
+        setTaskCount(response.data.length); // Set the count based on the data length
+      } catch (error) {
+        console.error("Error fetching Task count:", error);
+      }
+    };
+
+    fetchTaskCount();
   }, []);
 
   return (
@@ -155,43 +158,84 @@ function Dashboard() {
           </button>
           <button className="sidebar-btn">Google Drive</button>
         </aside>
-        <main className="content">
-          <div className="stat-cards">
-            <div className="stat-card">
-              <h3>Total no. of Staffs</h3>
-              <div className="stat-value">{staffCount}</div>
-            </div>
-            <div className="stat-card">
-              <h3>Needed Vouchers Today:</h3>
-              <div className="voucher-list">
-                <p>Voucher 1</p>
-                <p>Voucher 2</p>
-                <p>Voucher 3</p>
-                <p>Voucher 4</p>
+        <main className="main-container">
+          <div className="main-title">
+            <h3>DASHBOARD</h3>
+          </div>
+
+          <div className="main-cards">
+            <div className="card">
+              <div className="card-inner">
+                <h3>Staff</h3>
+                <BsPeopleFill className="card_icon" />
               </div>
+              <h1>{staffCount}</h1>
             </div>
-            <div className="stat-card">
-              <h3>Number of Vouchers per Week</h3>
-              {weeklyData.map((item, index) => (
-                <p key={index}>
-                  {item.week}: {item.count}
-                </p>
-              ))}
+            <div className="card">
+              <div className="card-inner">
+                <h3>Vouchers Made</h3>
+                <BsFillGrid3X3GapFill className="card_icon" />
+              </div>
+              <h1>2000</h1>
+            </div>
+            <div className="card">
+              <div className="card-inner">
+                <h3>Vouchers Need</h3>
+                <BsFillArchiveFill className="card_icon" />
+              </div>
+              <h1>{taskCount}</h1>
             </div>
           </div>
-          <br /> <br /> <br /> <br /> <br />
-          <div className="chart-section">
-            <h3>Total no. of Voucher in a Year</h3>
-            <div
-              style={{
-                height: "300px",
-                backgroundColor: "white",
-                padding: "20px",
-                borderRadius: "10px",
-              }}
-            >
-              <Bar data={yearlyData} options={options} />
-            </div>
+
+          <div className="charts">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                width={500}
+                height={300}
+                data={data}
+                margin={{
+                  top: 5,
+                  right: 30,
+                  left: 20,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="made" fill="#ff6d00" />
+                <Bar dataKey="need" fill="#82ca9d" />
+              </BarChart>
+            </ResponsiveContainer>
+
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                width={500}
+                height={300}
+                data={data}
+                margin={{
+                  top: 5,
+                  right: 30,
+                  left: 20,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="made"
+                  stroke="#ff6d00"
+                  activeDot={{ r: 8 }}
+                />
+                <Line type="monotone" dataKey="need" stroke="#82ca9d" />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </main>
       </div>

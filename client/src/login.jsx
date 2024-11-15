@@ -70,14 +70,20 @@ function Login() {
       // Handle success response
       if (response.status === 200) {
         const { token } = response.data;
-        // Store the token (localStorage, cookie, or state management)
-        localStorage.setItem("token", token); // Example: save token in localStorage
+        localStorage.setItem("token", token); // Save token if using JWT
         console.log("Manual login successful!");
         navigate("/staffDashboard");
       }
     } catch (error) {
-      console.error("Error during login:", error);
-      alert("Login failed. Please check your email and password.");
+      // Display appropriate error message
+      if (error.response && error.response.status === 404) {
+        alert("User not registered. Please sign up first.");
+      } else if (error.response && error.response.status === 400) {
+        alert("Incorrect password. Please try again.");
+      } else {
+        console.error("Error during login:", error);
+        alert("Login failed. Please check your email and password.");
+      }
     }
   };
 
@@ -111,6 +117,7 @@ function Login() {
               onChange={(e) => setEmail(e.target.value)}
               required
             />
+
             <label>Password</label>
             <input
               type="password"
@@ -125,9 +132,11 @@ function Login() {
               onChange={handleRecaptchaChange}
               className="recaptcha"
             />
-            <button type="submit" className="submit-btn" onClick={handleLogin}>
+
+            <button type="submit" className="submit-btn">
               Login
             </button>
+
             <label style={{ marginTop: "0.5rem" }}>Continue with:</label>
             <GoogleLogin
               clientId={clientId}
