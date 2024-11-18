@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { GoogleLogin } from "@react-oauth/google";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"; // Import axios for making HTTP requests
-import "./login.css";
 import ReCAPTCHA from "react-google-recaptcha";
+import { GoogleLogin } from "@react-oauth/google";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import "./login.css";
 
 const clientId =
   "1083555345988-qc172fbg8ss4a7ptr55el7enke7g3s4v.apps.googleusercontent.com";
@@ -12,79 +13,78 @@ const RECAPTCHA_SITE_KEY = "6LfLiHsqAAAAADCbXE7JlyC2OJSmrON163QlUzrX";
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [recaptchaValue, setRecaptchaValue] = useState("");
-
   const navigate = useNavigate();
 
-  const onSuccess = async (res) => {
-    const base64Url = res.credential.split(".")[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const user = JSON.parse(atob(base64));
-
-    try {
-      // Send user data to the backend for MongoDB storage
-      const response = await axios.post(
-        "http://localhost:8000/api/google-login",
-        {
-          googleId: user.sub,
-          name: user.name,
-          email: user.email,
-          picture: user.picture,
-        }
-      );
-
-      console.log("Login Successful!:", user);
-      navigate("/dashboard");
-    } catch (error) {
-      console.error("Error during Google login:", error);
-      alert("Failed to log in with Google.");
-    }
-  };
-
-  const onFailure = (res) => {
-    console.log("Login failed! res: ", res);
-  };
-
-  const handleLogin = () => {
-    if (recaptchaValue) {
-      // Continue login if reCAPTCHA is solved
-      navigate("/staffDashboard");
-    } else {
-      alert("Please complete the reCAPTCHA verification.");
-    }
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
   };
 
   const handleRecaptchaChange = (value) => {
     setRecaptchaValue(value);
   };
 
-  // Handle manual login form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!recaptchaValue) {
+      alert("Please complete the reCAPTCHA verification.");
+      return;
+    }
+
+    console.log("Recaptcha Token:", recaptchaValue);
+
     try {
-      const response = await axios.get("http://localhost:8000/api/login", {
+      const response = await axios.post("http://localhost:8000/api/login", {
         email,
         password,
+        recaptcha: recaptchaValue, // Ensure this is passed to the backend
       });
 
-      // Handle success response
       if (response.status === 200) {
         const { token } = response.data;
-        localStorage.setItem("token", token); // Save token if using JWT
-        console.log("Manual login successful!");
+        localStorage.setItem("token", token);
+        alert("Login successful!");
         navigate("/staffDashboard");
       }
     } catch (error) {
-      // Display appropriate error message
-      if (error.response && error.response.status === 404) {
-        alert("User not registered. Please sign up first.");
-      } else if (error.response && error.response.status === 400) {
-        alert("Incorrect password. Please try again.");
+      console.error("Error during login:", error);
+      if (error.response) {
+        alert(error.response.data.error || "Login failed!");
       } else {
-        console.error("Error during login:", error);
-        alert("Login failed. Please check your email and password.");
+        alert("Network error. Please try again later.");
       }
     }
+  };
+
+  const onGoogleSuccess = async (res) => {
+    const base64Url = res.credential.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const user = JSON.parse(atob(base64));
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/api/google-login",
+        {
+          googleId: user.sub,
+          name: user.name,
+          email: user.email,
+        }
+      );
+
+      if (response.status === 200) {
+        console.log("Google login successful");
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.error("Google login error:", error);
+      alert("Failed to log in with Google.");
+    }
+  };
+
+  const onGoogleFailure = (res) => {
+    console.error("Google login failed:", res);
   };
 
   return (
@@ -117,32 +117,42 @@ function Login() {
               onChange={(e) => setEmail(e.target.value)}
               required
             />
-
-            <label>Password</label>
-            <input
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-
+            <div className="password-container">
+              <label>Password</label>
+              <div className="password-input-container">
+                <input
+                  type={passwordVisible ? "text" : "password"}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <div
+                  className="password-toggle"
+                  onClick={togglePasswordVisibility}
+                >
+                  {passwordVisible ? (
+                    <FaEyeSlash size={20} />
+                  ) : (
+                    <FaEye size={20} />
+                  )}
+                </div>
+              </div>
+            </div>
+            <p onClick={() => navigate("/signup")}>No Account? Sign Up Here</p>
             <ReCAPTCHA
               sitekey={RECAPTCHA_SITE_KEY}
               onChange={handleRecaptchaChange}
-              className="recaptcha"
             />
-
             <button type="submit" className="submit-btn">
               Login
             </button>
-
             <label style={{ marginTop: "0.5rem" }}>Continue with:</label>
             <GoogleLogin
               clientId={clientId}
               buttonText="Login with Google"
-              onSuccess={onSuccess}
-              onFailure={onFailure}
+              onSuccess={onGoogleSuccess}
+              onFailure={onGoogleFailure}
               cookiePolicy="single_host_origin"
               isSignedIn={true}
             />
