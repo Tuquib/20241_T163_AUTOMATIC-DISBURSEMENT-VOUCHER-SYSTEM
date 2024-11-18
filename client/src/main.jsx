@@ -12,6 +12,7 @@ import Manage from "./admin/manage.jsx";
 import Dashboard from "./admin/dashboard.jsx";
 import StaffDashboard from "./staff/staffDashboard.jsx";
 import StaffTask from "./staff/staffTask.jsx";
+import Profile from "./admin/profile.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -27,6 +28,7 @@ createRoot(document.getElementById("root")).render(
           <Route path="/addTask" element={<Task />} />
           <Route path="/staffDashboard" element={<StaffDashboard />} />
           <Route path="/staffTask" element={<StaffTask />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </GoogleOAuthProvider>
     </Router>

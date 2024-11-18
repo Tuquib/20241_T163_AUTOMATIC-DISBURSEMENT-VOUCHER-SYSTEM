@@ -38,11 +38,15 @@ function Dashboard() {
   };
 
   const handleTaskClick = () => {
-    navigate("/addTask"); // Navigate to the Login route when button is clicked
+    navigate("/addTask"); // Navigate to the Task route when button is clicked
   };
 
   const handleStaffClick = () => {
-    navigate("/addStaff"); // Navigate to the Login route when button is clicked
+    navigate("/addStaff"); // Navigate to the Staff route when button is clicked
+  };
+
+  const handleProfileClick = () => {
+    navigate("/profile"); // Navigate to the Profile route when button is clicked
   };
 
   const handleLogout = () => {
@@ -137,11 +141,9 @@ function Dashboard() {
           <span className="sub2-text">Automatic Disbursement Voucher</span>
         </div>
         <nav className="nav-links">
-          <button className="icon-button">👤</button>
+          <button className="icon-button" onClick={handleProfileClick}> 👤 </button>
           <button className="icon-button">🔔</button>
-          <button className="logout-btn" onClick={handleLogout}>
-            Logout
-          </button>
+          <button className="logout-btn" onClick={handleLogout}> Logout </button>
         </nav>
       </header>
       <div className="layout">
@@ -186,7 +188,7 @@ function Dashboard() {
               <h1>{taskCount}</h1>
             </div>
           </div>
-
+          <br/> <br/><br/><br/><br/>
           <div className="charts">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart

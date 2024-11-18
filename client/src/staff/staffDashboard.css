@@ -1,83 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap");
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-.dashboard {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
-
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 2rem;
-  background: #111150;
-  position: fixed;
-  width: 100%;
-  top: 0;
-  z-index: 1;
-}
-
-.logo {
-  width: 50px;
-  height: auto;
-  margin-right: 10px;
-}
-
-.text-container {
-  font-family: "Poppins", sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.logo-text {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: white;
-}
-
-.sub-text,
-.sub2-text {
-  font-size: 1rem;
-  color: #cccccc;
-}
-
-.icon-button {
-  background: none;
-  border: none;
-  font-size: 20px;
-  margin-right: 15px;
-  cursor: pointer;
-}
-
-.logout-btn {
-  padding: 0.5rem 1rem;
-  background-color: blue;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s ease;
-}
-
-.logout-btn:hover {
-  background-color: #0056b3;
-}
-
-.layout {
-  display: flex;
-  height: 100%;
-  margin-top: 4rem;
-}
-
 .sidebar {
   width: 15.6vw;
   background-color: #111150;
@@ -107,30 +29,16 @@
   background-color: #495057;
 }
 
-.con {
-  background-color: rgb(117, 145, 215);
-  margin-left: 15.6vw;
-  padding: 2rem;
-  width: calc(100% - 15.6vw); /* Adjusts for sidebar width */
-  display: flex;
-  position: fixed;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  top: 60px; /* Offset below the navbar */
-  min-height: calc(100vh - 60px); /* Viewport height minus navbar height */
-  text-align: center;
-}
-
 .main-container {
   background-color: rgb(239, 238, 238);
   width: calc(100% - 15.6vw);
   margin-left: 15.6vw;
-  overflow-y: auto;
-  position: absolute;
   padding: 2rem;
-  color: rgba(255, 255, 255, 0.95);
   display: flex;
+  overflow-y: auto;
+  flex-direction: column;
+  flex-grow: 1;
+  min-height: 100%;
 }
 
 .main-title {
@@ -168,3 +76,39 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
 }
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.navbar {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: 5rem; /* Adjust height if needed */
+  z-index: 1;
+}
+
+.layout {
+  display: flex;
+  height: calc(100vh - 4rem); /* Full height minus navbar */
+  width: 100%;
+}
+
+
+
+
+
