@@ -87,10 +87,11 @@
   border-radius: 8px;
   padding: 2rem;
   width: 400px;
+  margin-left: 480px;
   text-align: center;
   box-shadow: 0px 10px 16px rgba(0, 0, 0, 0.2);
   margin-top: 2rem;
-  font-family: "Poppins", sans-serif;
+  font-family: sans-serif, "Popppins";
 }
 
 .login-card h2 {
@@ -120,29 +121,12 @@
   border: 1px solid #ccc;
 }
 
-.password-container {
-  position: relative;
-}
-
-.password-input-container {
-  position: relative;
-}
-
-.password-input-container input {
-  background-color: white; /* Sets background to white */
-  color: #333;
-  padding: 0.5rem;
-  margin-bottom: 1rem;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-}
-
-.password-toggle {
+.password-toggle-login {
   position: absolute;
-  top: 50%;
-  right: 10px;
-  transform: translateY(-50%);
+  left: 818px;
+  transform: translateY(400%);
   cursor: pointer;
+  color: #b2afaf;
 }
 
 .submit-btn {
@@ -165,17 +149,11 @@
   background-color: #004085;
 }
 
-p {
-  font-size: 0.9rem;
-  margin-top: 1rem;
+.login-card p {
   cursor: pointer;
-  color: #000;
+  color: #848383;
 }
 
-p:hover {
+.login-card p:hover {
   text-decoration: underline;
-}
-
-.recaptcha-container {
-  margin: 1rem 0;
 }

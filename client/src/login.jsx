@@ -117,29 +117,22 @@ function Login() {
               onChange={(e) => setEmail(e.target.value)}
               required
             />
-            <div className="password-container">
-              <label>Password</label>
-              <div className="password-input-container">
-                <input
-                  type={passwordVisible ? "text" : "password"}
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <div
-                  className="password-toggle"
-                  onClick={togglePasswordVisibility}
-                >
-                  {passwordVisible ? (
-                    <FaEyeSlash size={20} />
-                  ) : (
-                    <FaEye size={20} />
-                  )}
-                </div>
-              </div>
+            <label>Password</label>
+            <input
+              type={passwordVisible ? "text" : "password"}
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <div
+              className="password-toggle-login"
+              onClick={togglePasswordVisibility}
+            >
+              {passwordVisible ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
             </div>
             <p onClick={() => navigate("/signup")}>No Account? Sign Up Here</p>
+            <br />
             <ReCAPTCHA
               sitekey={RECAPTCHA_SITE_KEY}
               onChange={handleRecaptchaChange}

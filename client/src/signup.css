@@ -87,7 +87,7 @@
   filter: blur(8px); /* Adjust the blur intensity here */
 }
 
-.login-card {
+.signup-card {
   background-color: rgba(255, 255, 255, 0.9);
   border-radius: 8px;
   padding: 2rem;
@@ -99,31 +99,39 @@
   font-family: sans-serif, "Popppins";
 }
 
-.login-card h2 {
+.signup-card h2 {
   font-size: 1.5rem;
   margin-bottom: 1rem;
   color: #333;
 }
 
-.login-card form {
+.signup-card form {
   display: flex;
   flex-direction: column;
 }
 
-.login-card label {
+.signup-card label {
   font-size: 0.9rem;
   color: #555;
   margin-bottom: 0.3rem;
   text-align: left;
 }
 
-.login-card input {
+.signup-card input {
   background-color: white; /* Sets background to white */
   color: #333;
   padding: 0.5rem;
   margin-bottom: 1rem;
   border-radius: 4px;
   border: 1px solid #ccc;
+}
+
+.password-toggle-signup {
+  position: absolute;
+  left: 818px;
+  transform: translateY(680%);
+  cursor: pointer;
+  color: #b2afaf;
 }
 
 .recaptcha {
@@ -145,34 +153,11 @@
   background-color: #0056b3;
 }
 
-.google_btn {
-  width: 230px;
-  height: 40px;
-  border-radius: 5px;
-  border: none;
-  outline: none;
-  background-color: white;
-  box-shadow:
-    rgb(0 0 0 / 20%) 0px 3px 1px -2px,
-    rgb(0 0 0 / 14%) 0px 2px 2px 0px,
-    rgb(0 0 0 / 12%) 0px 1px 5px 0px;
-  font-size: 16px;
-  font-weight: 500;
-  margin: 0 0 20px 0;
-  color: #2c444e;
+.signup-card p {
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
+  color: #848383;
 }
 
-.google_btn > img {
-  width: 30px;
-  height: 30px;
-  object-fit: cover;
-}
-
-.google_btn > span {
-  margin-left: 10px;
+.signup-card p:hover {
+  text-decoration: underline;
 }

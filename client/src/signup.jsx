@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./signup.css";
 import ReCAPTCHA from "react-google-recaptcha";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const RECAPTCHA_SITE_KEY = "6LfLiHsqAAAAADCbXE7JlyC2OJSmrON163QlUzrX";
 
@@ -10,9 +11,14 @@ function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [recaptchaValue, setRecaptchaValue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false); // Prevent double submits
   const navigate = useNavigate();
+
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
+  };
 
   const handleRecaptchaChange = (value) => {
     setRecaptchaValue(value);
@@ -76,7 +82,7 @@ function Signup() {
           alt="background"
           className="bg"
         />
-        <div className="login-card">
+        <div className="signup-card">
           <h2>Sign Up</h2>
           <form onSubmit={handleSubmit}>
             <label>Name</label>
@@ -97,12 +103,18 @@ function Signup() {
             />
             <label>Password</label>
             <input
-              type="password"
+              type={passwordVisible ? "text" : "password"}
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            <div
+              className="password-toggle-signup"
+              onClick={togglePasswordVisibility}
+            >
+              {passwordVisible ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+            </div>
             <p onClick={() => navigate("/login")}>
               Already Have Account? Login Here
             </p>
