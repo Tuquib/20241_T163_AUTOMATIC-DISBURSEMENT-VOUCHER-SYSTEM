@@ -92,7 +92,10 @@ function StaffTask() {
                     <td>{task.date}</td>
                     <td>{task.time}</td>
                     <td>
-                      <button onClick={() => handleDelete(task._id)}>
+                      <button className="create-btn" style={{
+                        backgroundColor: 'blue',
+                        color: 'white',
+                        }}>
                         Create
                       </button>
                     </td>
