@@ -58,6 +58,7 @@
 }
 
 .logout-btn {
+  border-bottom-left-radius: 5px;
   padding: 0.5rem 1rem;
   background-color: blue;
   color: white;
@@ -175,13 +176,9 @@
   opacity: 0.8;
 }
 
-.task-table td button:first-of-type {
-  background-color: #4caf50; /* Green for Edit */
-  color: white;
-}
 
 .task-table td button:last-of-type {
-  background-color: #f44336; /* Red for Delete */
+  background-color: red; /* Red for Create */
   color: white;
 }
 

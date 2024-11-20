@@ -55,9 +55,7 @@ function StaffTask() {
         <nav className="nav-links">
           <button className="icon-button">👤</button>
           <button className="icon-button">🔔</button>
-          <button className="logout-btn" onClick={handleLogout}>
-            Logout
-          </button>
+          <button className="logout-btn" onClick={handleLogout}> Logout </button>
         </nav>
       </header>
       <div className="layout">
@@ -95,7 +93,7 @@ function StaffTask() {
                     <td>{task.time}</td>
                     <td>
                       <button onClick={() => handleDelete(task._id)}>
-                        Delete
+                        Create
                       </button>
                     </td>
                   </tr>
