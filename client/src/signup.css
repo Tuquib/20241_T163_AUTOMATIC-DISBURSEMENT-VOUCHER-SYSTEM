@@ -110,6 +110,12 @@
   flex-direction: column;
 }
 
+.signup-card input:focus,
+.signup-card select:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
 .signup-card label {
   font-size: 0.9rem;
   color: #555;
@@ -126,10 +132,19 @@
   border: 1px solid #ccc;
 }
 
+.signup-card select {
+  background-color: white; /* Sets background to white */
+  color: #333;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
 .password-toggle-signup {
   position: absolute;
   left: 818px;
-  transform: translateY(680%);
+  transform: translateY(960%);
   cursor: pointer;
   color: #b2afaf;
 }

@@ -1,23 +1,27 @@
-const express = require("express");
-const adminRoutes = express();
+import express from "express";
+import bodyParser from "body-parser";
+import { 
+  adminLogin, 
+  initializeAdminDrive, 
+  getAdmins, 
+  getAdmin, 
+  updateAdmin, 
+  deleteAdmin 
+} from "../controller/adminController.js";
 
-//import controller
-const admins = require("../controller/adminController");
-// use controller
-adminRoutes.use("adminController", admins);
+const adminRoutes = express.Router();
 
-const bodyParser = require("body-parser");
 adminRoutes.use(bodyParser.urlencoded({ extended: false }));
 adminRoutes.use(bodyParser.json());
 
-adminRoutes.get("/", getAdmins);
+// Admin login and drive initialization
+adminRoutes.post("/admin/login", adminLogin);
+adminRoutes.post("/admin/initialize-drive", initializeAdminDrive);
 
-adminRoutes.get("/:id", getAdmin);
+// Other admin routes
+adminRoutes.get("/admin", getAdmins);
+adminRoutes.get("/admin/:id", getAdmin);
+adminRoutes.patch("/admin/:id", updateAdmin);
+adminRoutes.delete("/admin/:id", deleteAdmin);
 
-adminRoutes.get("/:id", getAdmin);
-
-adminRoutes.patch("/:id", updateAdmin);
-
-adminRoutes.delete("/:id", deleteAdmin);
-
-module.exports = adminRoutes;
+export default adminRoutes;

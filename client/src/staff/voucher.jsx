@@ -3,16 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { googleLogout } from "@react-oauth/google";
 import { MdOutlineLogout } from "react-icons/md";
 import axios from "axios";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
 import "./staffDashboard.css";
 
 const data = [
@@ -48,23 +38,46 @@ function Dashboard() {
       try {
         setLoading(true);
         setError(null);
+        const token = localStorage.getItem("googleToken");
         const staffEmail = localStorage.getItem("userEmail");
+        const staffName = localStorage.getItem("userName");
+
+        if (!token || !staffEmail || !staffName) {
+          navigate("/login");
+          return;
+        }
 
         const response = await axios.get("http://localhost:8000/api/vouchers", {
           params: {
+            accessToken: token,
             staffEmail: staffEmail,
+            staffName: staffName,
+          },
+          headers: {
+            "Content-Type": "application/json",
           },
         });
 
-        const formattedVouchers = response.data.map((voucher) => ({
-          id: voucher.id,
-          name: voucher.name,
-          createdTime: new Date(voucher.createdTime).toLocaleDateString(),
-          modifiedTime: new Date(voucher.modifiedTime).toLocaleDateString(),
-          status: voucher.status,
-          webViewLink: voucher.webViewLink,
+        console.log("Raw response:", response.data);
+
+        const voucherArray = Array.isArray(response.data) ? response.data : [];
+        console.log("Voucher array:", voucherArray);
+
+        const formattedVouchers = voucherArray.map((voucher) => ({
+          id: voucher.id || voucher._id,
+          name: voucher.name || voucher.voucherNumber,
+          createdTime: voucher.createdTime
+            ? new Date(voucher.createdTime).toLocaleDateString()
+            : "",
+          modifiedTime: voucher.modifiedTime
+            ? new Date(voucher.modifiedTime).toLocaleDateString()
+            : "",
+          status: voucher.status || "Pending",
+          webViewLink: voucher.webViewLink || "",
+          source: voucher.source || "unknown",
         }));
 
+        console.log("Formatted vouchers:", formattedVouchers);
         setVouchers(formattedVouchers);
       } catch (err) {
         console.error("Error fetching vouchers:", err);
@@ -75,7 +88,7 @@ function Dashboard() {
     };
 
     fetchVouchers();
-  }, []);
+  }, [navigate]);
 
   const openInDrive = (webViewLink) => {
     window.open(webViewLink, "_blank");
@@ -88,6 +101,40 @@ function Dashboard() {
     localStorage.removeItem("userName");
     localStorage.removeItem("userInfo");
     navigate("/");
+  };
+
+  const createVoucher = async (formData) => {
+    try {
+      const token = localStorage.getItem("googleToken");
+      const staffEmail = localStorage.getItem("userEmail");
+      const staffName = localStorage.getItem("userName");
+
+      if (!token || !staffEmail || !staffName) {
+        console.error("Missing required information");
+        return;
+      }
+
+      const response = await axios.post(
+        "http://localhost:8000/api/vouchers",
+        {
+          voucherData: formData,
+          accessToken: token,
+          staffEmail: staffEmail,
+          staffName: staffName,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("Voucher created:", response.data);
+      fetchVouchers(); // Refresh the list
+    } catch (error) {
+      console.error("Error creating voucher:", error);
+      setError("Failed to create voucher. Please try again.");
+    }
   };
 
   return (
@@ -106,7 +153,7 @@ function Dashboard() {
       </header>
       <div className="layout">
         <aside className="sidebar">
-          <button className="sidebar-btn">Dashboard</button>
+          <button className="sidebar-btn" onClick={() => navigate("/staffDashboard")}>Dashboard</button>
           <button className="sidebar-btn" onClick={() => navigate("/voucher")}>
             Voucher
           </button>
@@ -123,38 +170,6 @@ function Dashboard() {
         </aside>
         <main className="main-container">
           {error && <div className="error-message">{error}</div>}
-          <div className="main-title">
-            <h3>DASHBOARD</h3>
-            <button
-              className="create-voucher-btn"
-              onClick={handleCreateVoucher}
-            >
-              Create Voucher
-            </button>
-          </div>
-
-          <div className="charts">
-            <div className="chart-card">
-              <h4>Monthly Summary</h4>
-              {vouchers.length > 0 ? (
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={data}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="vouchers" fill="#0088FE" />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="no-data-message">
-                  <p>No data to display yet</p>
-                </div>
-              )}
-            </div>
-          </div>
-
           <div className="vouchers-table-container">
             <h4>Your Vouchers</h4>
             {loading ? (

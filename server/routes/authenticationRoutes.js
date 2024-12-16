@@ -5,7 +5,6 @@ import {
   handleLogin,
   updateLogin,
   deleteLogin,
-  handleGoogleLogin,
   handleSignUp,
 } from "../controller/authenticationController.js";
 
@@ -18,17 +17,12 @@ router.get("/login", getLogins);
 router.post("/login", handleLogin);
 
 // Route for user signup
-router.post("/signup", handleSignUp); // For sign-up
-
-router.get("/manual-login", getLogin);
+router.post("/signup", handleSignUp);
 
 // Route to update an existing login member by ID
 router.patch("/login/:id", updateLogin);
 
 // Route to delete a login member by ID
 router.delete("/login/:id", deleteLogin);
-
-// Route for Google login
-router.post("/google-login", handleGoogleLogin);
 
 export default router;

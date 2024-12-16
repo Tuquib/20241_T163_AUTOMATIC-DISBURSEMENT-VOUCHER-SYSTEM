@@ -1,7 +1,9 @@
 import express from "express";
 import {
   getTasks,
-  getTask,
+  getDefaultDate,
+  getTaskById,
+  getTaskByStaff,
   postTask,
   updateTask,
   deleteTask,
@@ -12,8 +14,11 @@ const router = express.Router();
 // Route to get all staff
 router.get("/task", getTasks);
 
-// Route to get a single staff by ID
-router.get("/task/:id", getTask);
+router.get("/defaultDate", getDefaultDate);
+
+router.get("/task/:id", getTaskById);
+
+router.get("/task/staff/:email", getTaskByStaff);
 
 // Route to create a new staff member
 router.post("/task", postTask);

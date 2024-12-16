@@ -61,19 +61,22 @@ body {
   cursor: pointer;
 }
 
-.logout-btn {
-  padding: 0.5rem 1rem;
-  background-color: blue;
-  color: white;
+.log-btn {
+  font-family: "Poppins", sans-serif;
+  background-color: #363674;
+  color: whitesmoke;
   border: none;
-  border-radius: 5px;
-  cursor: pointer;
   font-size: 1rem;
+  padding: 0.5rem 1rem;
+  text-align: left;
+  margin-bottom: 0.5rem;
+  border-radius: 10px;
+  cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
-.logout-btn:hover {
-  background-color: #0056b3;
+.log-btn:hover {
+  background-color: #495057;
 }
 
 .layout {
@@ -120,7 +123,8 @@ body {
   padding: 2rem;
   color: rgba(255, 255, 255, 0.95);
   display: flex;
-  flex-direction: column;
+  object-fit: cover;
+  flex-direction:column;
 }
 
 .main-title {

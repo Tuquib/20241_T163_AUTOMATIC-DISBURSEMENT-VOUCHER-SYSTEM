@@ -4,22 +4,32 @@ import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import MenuItem from "@mui/material/MenuItem";
 import "./addTask.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { googleLogout } from "@react-oauth/google";
+import { MdOutlineLogout } from "react-icons/md";
+
+const clientId =
+  "1083555345988-qc172fbg8ss4a7ptr55el7enke7g3s4v.apps.googleusercontent.com";
+
+const onSuccess = () => {
+  console.log("Logout Successfully!");
+};
 
 const AddTask = () => {
   const navigate = useNavigate();
 
   // Sidebar navigation functions
   const handleStaffClick = () => navigate("/addStaff");
-  const handleLogoutClick = () => navigate("/");
   const handleDashboardClick = () => navigate("/dashboard");
   const handleManageClick = () => navigate("/manage");
 
   // State Variables
-  const [payeeName, setPayeeName] = useState("");
-  const [type, setType] = useState("");
+  const [entityName, setEntityName] = useState("");
+  const [staff, setStaff] = useState("");
+  const [staffList, setStaffList] = useState([]);
   const [date, setDate] = useState(null);
   const [time, setTime] = useState(null);
   const [tasks, setTasks] = useState([]);
@@ -27,16 +37,26 @@ const AddTask = () => {
   const [isEditingTask, setIsEditingTask] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [taskFormValues, setTaskFormValues] = useState({
-    payeeName: "",
-    type: "",
+    entityName: "",
+    staff: "",
     date: "",
     time: "",
   });
 
-  // Fetch tasks on component mount
+  // Fetch tasks and staff list on component mount
   useEffect(() => {
     fetchTasks();
+    fetchStaffList();
   }, []);
+
+  const fetchStaffList = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/api/staff");
+      setStaffList(response.data);
+    } catch (error) {
+      console.error("Error fetching staff list:", error);
+    }
+  };
 
   const fetchTasks = async () => {
     try {
@@ -54,8 +74,8 @@ const AddTask = () => {
   const handleEditTask = (task) => {
     setSelectedTask(task);
     setTaskFormValues({
-      payeeName: task.payeeName,
-      type: task.type,
+      entityName: task.entityName,
+      staff: task.staff,
       date: task.date,
       time: task.time,
     });
@@ -79,6 +99,7 @@ const AddTask = () => {
   // Delete task
   const handleDeleteTask = async (taskId) => {
     try {
+      alert("Are you sure you want to delete this task?");
       await axios.delete(`http://localhost:8000/api/task/${taskId}`);
       fetchTasks();
     } catch (error) {
@@ -90,9 +111,15 @@ const AddTask = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const selectedStaffMember = staffList.find((s) => s.email === staff);
+    if (!selectedStaffMember) {
+      alert("Please select a valid staff member");
+      return;
+    }
+
     const taskData = {
-      payeeName,
-      type,
+      entityName,
+      staff: staff, // Using staff email as identifier
       date: date ? date.format("YYYY-MM-DD") : "",
       time: time ? time.format("HH:mm") : "",
     };
@@ -108,6 +135,12 @@ const AddTask = () => {
     }
   };
 
+  const handleLogout = () => {
+    googleLogout();
+    onSuccess();
+    navigate("/");
+  };
+
   return (
     <div className="AddTask">
       <header className="navbar">
@@ -120,9 +153,6 @@ const AddTask = () => {
         <nav className="nav-links">
           <button className="icon-button">👤</button>
           <button className="icon-button">🔔</button>
-          <button className="logout-btn" onClick={handleLogoutClick}>
-            Logout
-          </button>
         </nav>
       </header>
 
@@ -138,7 +168,10 @@ const AddTask = () => {
           <button className="sidebar-btn" onClick={handleStaffClick}>
             Staff
           </button>
-          <button className="sidebar-btn">Google Drive</button>
+          <button className="log-btn" onClick={handleLogout}>
+            Logout
+            <MdOutlineLogout className="log-icon" />
+          </button>
         </aside>
 
         <main className="content">
@@ -150,20 +183,27 @@ const AddTask = () => {
                   <div className="form-row">
                     <TextField
                       id="payee"
-                      label="Payee Name"
+                      label="Entity Name"
                       variant="outlined"
                       required
-                      value={payeeName}
-                      onChange={(e) => setPayeeName(e.target.value)}
+                      value={entityName}
+                      onChange={(e) => setEntityName(e.target.value)}
                     />
                     <TextField
                       id="type"
-                      label="Type"
+                      select
+                      label="Staff"
                       variant="outlined"
                       required
-                      value={type}
-                      onChange={(e) => setType(e.target.value)}
-                    />
+                      value={staff}
+                      onChange={(e) => setStaff(e.target.value)}
+                    >
+                      {staffList.map((staffMember) => (
+                        <MenuItem key={staffMember.email} value={staffMember.email}>
+                          {staffMember.name} ({staffMember.position})
+                        </MenuItem>
+                      ))}
+                    </TextField>
                   </div>
                   <div className="form-row">
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -189,13 +229,18 @@ const AddTask = () => {
             </>
           ) : (
             <div className="task-card">
-              <button className="task-button" onClick={() => setIsAddingTask(true)}>Add</button>
-              <h3>Tasks</h3>  
+              <button
+                className="task-button"
+                onClick={() => setIsAddingTask(true)}
+              >
+                Add
+              </button>
+              <h3>Tasks</h3>
               <table className="task-table">
                 <thead>
-                  <tr> 
-                    <th>Payee Name</th>
-                    <th>Type</th>
+                  <tr>
+                    <th>Entity Name</th>
+                    <th>Staff</th>
                     <th>Date</th>
                     <th>Time</th>
                     <th>Actions</th>
@@ -204,13 +249,18 @@ const AddTask = () => {
                 <tbody>
                   {tasks.map((task) => (
                     <tr key={task._id}>
-                      <td>{task.payeeName}</td>
-                      <td>{task.type}</td>
-                      <td>{task.date}</td>
+                      <td>{task.entityName}</td>
+                      <td>{task.staff}</td>
+                      <td>{new Date(task.date).toLocaleDateString()}</td>
                       <td>{task.time}</td>
                       <td>
                         <button onClick={() => handleEditTask(task)}>Edit</button>
-                        <button className="dm" onClick={() => handleDeleteTask(task._id)}>Delete</button>
+                        <button
+
+                          onClick={() => handleDeleteTask(task._id)}
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -220,58 +270,54 @@ const AddTask = () => {
           )}
 
           {isEditingTask && (
-            <div className="modal">
-              <div className="modal-content">
-                <h3>Edit Task</h3>
-                <input
-                  type="text"
-                  value={taskFormValues.payeeName}
-                  onChange={(e) =>
-                    setTaskFormValues({
-                      ...taskFormValues,
-                      payeeName: e.target.value,
-                    })
-                  }
-                  placeholder="Payee Name"
-                />
-                <input
-                  type="text"
-                  value={taskFormValues.type}
-                  onChange={(e) =>
-                    setTaskFormValues({
-                      ...taskFormValues,
-                      type: e.target.value,
-                    })
-                  }
-                  placeholder="Type"
-                />
-                <input
-                  className="date"
-                  type="date"
-                  value={taskFormValues.date}
-                  onChange={(e) =>
-                    setTaskFormValues({
-                      ...taskFormValues,
-                      date: e.target.value,
-                    })
-                  }
-                  placeholder="Date"
-                />
-                <input
-                  className="time"
-                  type="time"
-                  value={taskFormValues.time}
-                  onChange={(e) =>
-                    setTaskFormValues({
-                      ...taskFormValues,
-                      time: e.target.value,
-                    })
-                  }
-                  placeholder="Time"
-                />
-                <button onClick={handleUpdateTask}>Save</button>
-                <button onClick={() => setIsEditingTask(false)}>Cancel</button>
-              </div>
+            <div className="edit-form">
+              <h3>Edit Task</h3>
+              <input
+                type="text"
+                value={taskFormValues.entityName}
+                onChange={(e) =>
+                  setTaskFormValues({
+                    ...taskFormValues,
+                    entityName: e.target.value,
+                  })
+                }
+                placeholder="Payee Name"
+              />
+              <input
+                type="text"
+                value={taskFormValues.staff}
+                onChange={(e) =>
+                  setTaskFormValues({
+                    ...taskFormValues,
+                    staff: e.target.value,
+                  })
+                }
+                placeholder="Type"
+              />
+              <input
+                className="date"
+                type="date"
+                value={taskFormValues.date}
+                onChange={(e) =>
+                  setTaskFormValues({
+                    ...taskFormValues,
+                    date: e.target.value,
+                  })
+                }
+              />
+              <input
+                className="time"
+                type="time"
+                value={taskFormValues.time}
+                onChange={(e) =>
+                  setTaskFormValues({
+                    ...taskFormValues,
+                    time: e.target.value,
+                  })
+                }
+              />
+              <button onClick={handleUpdateTask}>Update Task</button>
+              <button onClick={() => setIsEditingTask(false)}>Cancel</button>
             </div>
           )}
         </main>

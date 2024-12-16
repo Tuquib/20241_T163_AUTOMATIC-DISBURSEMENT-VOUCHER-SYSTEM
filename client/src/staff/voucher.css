@@ -117,7 +117,6 @@
 
 .vouchers-table tr:hover {
   background-color: #f8f9fa;
-
 }
 
 .status-badge {
@@ -231,7 +230,9 @@
   box-sizing: border-box;
 }
 
-body, html, #root {
+body,
+html,
+#root {
   height: 100%;
   overflow: hidden;
 }

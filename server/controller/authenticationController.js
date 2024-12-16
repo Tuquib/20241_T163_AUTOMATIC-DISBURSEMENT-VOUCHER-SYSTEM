@@ -1,7 +1,10 @@
-import User from "../model/user.js";
 import Authentication from "../model/authenticationDB.js";
 import bcrypt from "bcrypt";
 import axios from "axios";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 // Get all logins
 const getLogins = async (req, res) => {
@@ -20,61 +23,106 @@ const handleLogin = async (req, res) => {
 
   // Step 1: Verify reCAPTCHA
   if (!recaptcha) {
-    return res.status(400).json({ error: "reCAPTCHA token is missing." });
+    console.log("reCAPTCHA verification failed: No token provided");
+    return res
+      .status(400)
+      .json({ error: "Please complete the reCAPTCHA verification." });
   }
 
   try {
+    console.log("Starting reCAPTCHA verification process...");
+    console.log(
+      "Recaptcha Token received: ",
+      recaptcha.substring(0, 20) + "..."
+    ); // Log partial token for security
+
     // Verify reCAPTCHA token with Google
     const recaptchaResponse = await axios.post(
       `https://www.google.com/recaptcha/api/siteverify`,
       null,
       {
         params: {
-          secret: process.env.RECAPTCHA_SECRET_KEY, // Make sure this is set correctly in your .env
+          secret: process.env.RECAPTCHA_SECRET_KEY,
           response: recaptcha,
         },
       }
     );
 
-    const { success, "error-codes": errorCodes } = recaptchaResponse.data;
+    console.log("reCAPTCHA verification response:", recaptchaResponse.data);
 
-    if (!success) {
-      console.error("reCAPTCHA verification failed:", errorCodes);
-      return res.status(400).json({ error: "reCAPTCHA verification failed." });
+    if (!recaptchaResponse.data.success) {
+      console.log(
+        "reCAPTCHA verification failed:",
+        recaptchaResponse.data["error-codes"]
+      );
+      return res.status(400).json({ error: "reCAPTCHA verification failed" });
     }
 
-    // Step 2: Find the user by email in the database
+    console.log("✅ reCAPTCHA verification successful!");
+
+    // Find user by email
     const user = await Authentication.findOne({ email });
+    console.log("User lookup result: ", user ? "User found" : "User not found");
 
     if (!user) {
-      console.error(`Login failed: User with email ${email} not found.`);
-      return res.status(404).json({ error: "User not registered." });
+      console.log("Login failed: Invalid email");
+      return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    // Step 3: Compare entered password with the stored hashed password
-    console.log("Stored Hashed Password:", user.password);
+    // Verify password
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log("Password Match:", isMatch);
+    console.log("Password verification:", isMatch ? "Success" : "Failed");
 
     if (!isMatch) {
-      console.error(`Login failed: Incorrect password for user ${email}`);
-      return res.status(400).json({ error: "Incorrect password." });
+      console.log("Login failed: Invalid password");
+      return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    // Step 4: Generate token (customize as per your needs, e.g., using JWT)
-    const token = "mockToken"; // Replace this with your token generation logic, e.g., JWT
+    // Generate JWT token
+    const token = jwt.sign(
+      {
+        userId: user._id,
+        email: user.email,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
 
-    console.log(`Login successful for user: ${email}`);
-    res.status(200).json({ message: "Login successful", token });
+    console.log("JWT token generated successfully");
+    console.log(
+      "🎉 Login successful with reCAPTCHA verification for user:",
+      email
+    );
+    console.log("User role:", user.role);
+
+    // Send single success response with all information
+    return res.status(200).json({
+      success: true,
+      recaptchaVerified: true,
+      message: "Login successful with reCAPTCHA verification",
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
+    });
   } catch (error) {
-    console.error("Error during login:", error.message);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("❌ Login error:", error);
+    console.error("Error details:", {
+      message: error.message,
+      stack: error.stack,
+      response: error.response?.data,
+    });
+    return res.status(500).json({ error: "Server error during login" });
   }
 };
 
 // Sign-up logic
 const handleSignUp = async (req, res) => {
-  const { name, email, password, recaptcha } = req.body;
+  const { name, email, role, password, recaptcha } = req.body;
 
   // Step 1: Verify reCAPTCHA
   if (!recaptcha) {
@@ -114,6 +162,7 @@ const handleSignUp = async (req, res) => {
       name,
       email,
       password: hashedPassword,
+      role,
     });
 
     await newUser.save();
@@ -167,28 +216,11 @@ const deleteLogin = async (req, res) => {
   }
 };
 
-// Google login handler
-const handleGoogleLogin = async (req, res) => {
-  const { googleId, name, email, picture } = req.body;
-  try {
-    let user = await User.findOne({ googleId });
-    if (!user) {
-      user = new User({ googleId, name, email, picture });
-      await user.save();
-    }
-    res.status(200).json({ message: "Google login successful", user });
-  } catch (error) {
-    console.error("Google login error:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-};
-
 export {
   getLogins,
   getLogin,
   handleLogin,
   updateLogin,
   deleteLogin,
-  handleGoogleLogin,
   handleSignUp,
 };

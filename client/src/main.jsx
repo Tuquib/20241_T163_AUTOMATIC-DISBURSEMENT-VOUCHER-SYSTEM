@@ -13,6 +13,8 @@ import Dashboard from "./admin/dashboard.jsx";
 import StaffDashboard from "./staff/staffDashboard.jsx";
 import StaffTask from "./staff/staffTask.jsx";
 import Profile from "./admin/profile.jsx";
+import Voucher from "./staff/createVoucher.jsx";
+import DisbursementVoucher from "./staff/voucher.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -29,6 +31,8 @@ createRoot(document.getElementById("root")).render(
           <Route path="/staffDashboard" element={<StaffDashboard />} />
           <Route path="/staffTask" element={<StaffTask />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/createVoucher/:taskID" element={<Voucher />} />
+          <Route path="/voucher" element={<DisbursementVoucher />} />
         </Routes>
       </GoogleOAuthProvider>
     </Router>

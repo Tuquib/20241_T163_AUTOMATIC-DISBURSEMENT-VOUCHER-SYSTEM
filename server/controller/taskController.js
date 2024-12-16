@@ -1,64 +1,145 @@
-import Task from "../model/taskDB.js"; // Ensure correct path
+import Task from "../model/taskDB.js";
+import Staff from "../model/staffDB.js";
 
-//Get task
+//Get all tasks
 const getTasks = async (req, res) => {
   try {
     const tasks = await Task.find();
     res.status(200).json(tasks);
   } catch (error) {
     console.error(error);
-    res.status(500).send("Error retrieving task");
+    res.status(500).send("Error retrieving tasks");
   }
 };
 
-//Get task by Id
-const getTask = async (req, res) => {
+// Get tasks by staff email
+const getTaskByStaff = async (req, res) => {
   try {
-    const task = await Task.findById(req.params.id);
-    if (!task) return res.status(404).send("task not found");
-    res.status(200).json(task);
+    const staffEmail = req.params.email;
+    if (!staffEmail) {
+      return res.status(400).json({ message: "Staff email is required" });
+    }
+
+    // Find the staff member first
+    const staff = await Staff.findOne({ email: staffEmail });
+    if (!staff) {
+      return res.status(404).json({ message: "Staff not found" });
+    }
+
+    // Find tasks where the staff field matches either the email or the position
+    const tasks = await Task.find({
+      $or: [
+        { staff: staffEmail },
+        { staff: staff.position }
+      ]
+    });
+    
+    res.json(tasks);
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Error retrieving task");
+    console.error("Error fetching tasks for staff:", error);
+    res.status(500).json({ message: "Error retrieving staff tasks" });
   }
 };
 
-//Create a task
+const getDefaultDate = async (req, res) => {
+  try {
+    const latestTask = await Task.findOne().sort({ date: -1 });
+    if (latestTask) {
+      return res.json({ date: latestTask.date });
+    }
+    return res.json({ date: new Date() });
+  } catch (error) {
+    console.error("Error fetching default date:", error);
+    res.status(500).json({ error: "Unable to fetch default date" });
+  }
+};
+
+const getTaskById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const task = await Task.findById(id);
+    if (!task) {
+      return res.status(404).json({ error: "Task not found" });
+    }
+    res.json(task);
+  } catch (error) {
+    console.error("Error fetching task by ID:", error);
+    res.status(500).json({ error: "Unable to fetch task" });
+  }
+};
+
+// Create a new task
 const postTask = async (req, res) => {
   try {
-    const task = new Task(req.body);
-    const savedtask = await task.save();
-    res.status(201).json(savedtask);
+    const { entityName, staff, date, time } = req.body;
+    
+    // Validate required fields
+    if (!entityName || !staff || !date || !time) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    const task = new Task({
+      entityName,
+      staff,
+      date,
+      time
+    });
+
+    const savedTask = await task.save();
+    res.status(201).json(savedTask);
   } catch (error) {
-    console.error(error);
-    res.status(400).send("Error saving task");
+    console.error("Error creating task:", error);
+    res.status(500).json({ error: "Unable to create task" });
   }
 };
 
-//Update task
+// Update an existing task
 const updateTask = async (req, res) => {
   try {
-    const updatedtask = await Task.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
+    const { id } = req.params;
+    const updates = req.body;
+
+    const task = await Task.findById(id);
+    if (!task) {
+      return res.status(404).json({ error: "Task not found" });
+    }
+
+    Object.keys(updates).forEach((key) => {
+      if (updates[key] !== undefined) {
+        task[key] = updates[key];
+      }
     });
-    if (!updatedtask) return res.status(404).send("task not found");
-    res.status(200).json(updatedtask);
+
+    const updatedTask = await task.save();
+    res.json(updatedTask);
   } catch (error) {
-    console.error(error);
-    res.status(400).send("Error updating task");
+    console.error("Error updating task:", error);
+    res.status(500).json({ error: "Unable to update task" });
   }
 };
 
-//Delete task
+// Delete a task
 const deleteTask = async (req, res) => {
   try {
-    const deletedtask = await Task.findByIdAndDelete(req.params.id);
-    if (!deletedtask) return res.status(404).send("task not found");
-    res.status(200).send("task deleted successfully");
+    const { id } = req.params;
+    const task = await Task.findById(id);
+    if (!task) {
+      return res.status(404).json({ error: "Task not found" });
+    }
+    await task.deleteOne();
+    res.json({ message: "Task deleted successfully" });
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Error deleting task");
+    console.error("Error deleting task:", error);
+    res.status(500).json({ error: "Unable to delete task" });
   }
 };
 
-export { getTasks, getTask, postTask, updateTask, deleteTask };
+export {
+  getTasks,
+  getDefaultDate,
+  getTaskById,
+  getTaskByStaff,
+  postTask,
+  updateTask,
+  deleteTask,
+};

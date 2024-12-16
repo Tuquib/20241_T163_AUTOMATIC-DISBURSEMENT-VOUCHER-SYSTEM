@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./manage.css";
 import { googleLogout } from "@react-oauth/google";
+import { MdOutlineLogout } from "react-icons/md";
 
 const clientId =
   "1083555345988-qc172fbg8ss4a7ptr55el7enke7g3s4v.apps.googleusercontent.com";
@@ -143,9 +144,6 @@ function Manage() {
         <nav className="nav-links">
           <button className="icon-button">👤</button>
           <button className="icon-button">🔔</button>
-          <button className="logout-btn" onClick={handleLogout}>
-            Logout
-          </button>
         </nav>
       </header>
       <div className="layout">
@@ -165,7 +163,10 @@ function Manage() {
           <button className="sidebar-btn" onClick={() => navigate("/addStaff")}>
             Staff
           </button>
-          <button className="sidebar-btn">Google Drive</button>
+          <button className="log-btn" onClick={handleLogout}>
+            Logout
+            <MdOutlineLogout className="log-icon" />
+          </button>
         </aside>
         <main className="managecon">
           <div className="task-card">

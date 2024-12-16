@@ -1,13 +1,25 @@
 import mongoose from "mongoose";
 
-// Define the schema for the Task
 const authenticationSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
   },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  role: {
+    type: String,
+    enum: ["admin", "staff"],
+    required: true,
+  },
+  picture: String,
 });
 
 const Authentication = mongoose.model("Authentication", authenticationSchema);

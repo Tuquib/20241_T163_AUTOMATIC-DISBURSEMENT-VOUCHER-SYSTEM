@@ -1,76 +1,140 @@
-const adminController = require("../model/adminDB");
-const bcrypt = require("bcrypt");
+import { googleDriveService } from '../services/googleDriveService.js';
+import Admin from '../model/adminDB.js';
+import bcrypt from 'bcrypt';
 
-// Get all admin
-const getAdmins = async (req, res) => {
+// Admin login
+const adminLogin = async (req, res) => {
   try {
-    const admins = await adminController.find();
-    res.send(admins);
-  } catch (error) {
-    console.log(error);
-    res.status(500).send("Error retrieving admin");
-  }
-};
+    console.log('Admin login attempt:', req.body.email);
+    const { email, password } = req.body;
 
-// Get a single admin by ID
-const getAdmin = async (req, res) => {
-  try {
-    const admin = await adminController.findById(req.params.id);
-    if (!admin) return res.status(404).send("Admin not found");
-    res.send(student);
-  } catch (error) {
-    console.log(error);
-    res.status(500).send("Error retrieving admin");
-  }
-};
-
-const postAdmin = async (req, res) => {
-  try {
-    // Find the admin by email
+    // Find admin by email
     const admin = await Admin.findOne({ email });
     if (!admin) {
+      console.log('Admin not found:', email);
       return res.status(404).json({ message: "Admin not found" });
     }
 
-    // Check if the password is correct
+    // Check password
     const isPasswordCorrect = await bcrypt.compare(password, admin.password);
     if (!isPasswordCorrect) {
+      console.log('Incorrect password for admin:', email);
       return res.status(401).json({ message: "Incorrect password" });
     }
 
-    // If credentials are correct, send a success response (or token if using authentication)
-    res.status(200).json({ message: "Login successful", adminId: admin._id });
+    console.log('Admin logged in successfully:', email);
+    res.status(200).json({ 
+      message: "Login successful", 
+      adminId: admin._id,
+      email: admin.email 
+    });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error", error });
+    console.error('Error in admin login:', error);
+    res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
 
-// Update admin by ID
+// Initialize Google Drive for admin
+const initializeAdminDrive = async (req, res) => {
+  try {
+    const { accessToken, email } = req.body;
+    console.log('Initializing Google Drive for admin:', email);
+
+    if (!accessToken) {
+      console.log('No access token provided');
+      return res.status(401).json({ message: 'No access token provided' });
+    }
+
+    if (email !== '2201102322@student.buksu.edu.ph') {
+      console.log('Non-admin user tried to initialize drive:', email);
+      return res.status(403).json({ message: 'Only admin can initialize drive' });
+    }
+
+    console.log('Using singleton Google Drive service instance');
+    await googleDriveService.initializeWithToken(accessToken, email);
+    
+    console.log('Google Drive initialized successfully for admin:', email);
+    res.status(200).json({ message: 'Drive initialized successfully' });
+  } catch (error) {
+    console.error('Error initializing Google Drive:', error);
+    res.status(500).json({ 
+      message: 'Error initializing Google Drive', 
+      error: error.message 
+    });
+  }
+};
+
+// Get all admins
+const getAdmins = async (req, res) => {
+  try {
+    console.log('Fetching all admins');
+    const admins = await Admin.find();
+    res.json(admins);
+  } catch (error) {
+    console.error('Error retrieving admins:', error);
+    res.status(500).json({ message: "Error retrieving admins", error: error.message });
+  }
+};
+
+// Get a single admin
+const getAdmin = async (req, res) => {
+  try {
+    console.log('Fetching admin by ID:', req.params.id);
+    const admin = await Admin.findById(req.params.id);
+    if (!admin) {
+      console.log('Admin not found:', req.params.id);
+      return res.status(404).json({ message: "Admin not found" });
+    }
+    res.json(admin);
+  } catch (error) {
+    console.error('Error retrieving admin:', error);
+    res.status(500).json({ message: "Error retrieving admin", error: error.message });
+  }
+};
+
+// Update admin
 const updateAdmin = async (req, res) => {
   try {
-    const updatedAdmin = await adminController.findByIdAndUpdate(
+    console.log('Updating admin:', req.params.id);
+    const updatedAdmin = await Admin.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true }
     );
-    if (!updatedadmin) return res.status(404).send("Admin not found");
-    res.status(200).json(updatedAdmin);
+    if (!updatedAdmin) {
+      console.log('Admin not found for update:', req.params.id);
+      return res.status(404).json({ message: "Admin not found" });
+    }
+    console.log('Admin updated successfully:', req.params.id);
+    res.json(updatedAdmin);
   } catch (error) {
-    console.log(error);
-    res.status(400).send("Error updating admin");
+    console.error('Error updating admin:', error);
+    res.status(500).json({ message: "Error updating admin", error: error.message });
   }
 };
 
-// Delete a admin by ID
+// Delete admin
 const deleteAdmin = async (req, res) => {
   try {
-    const deletedAdmin = await adminController.findByIdAndDelete(req.params.id);
-    if (!deletedAdmin) return res.status(404).send("Admin not found");
-    res.status(200).send("Admin deleted successfully");
+    console.log('Deleting admin:', req.params.id);
+    const deletedAdmin = await Admin.findByIdAndDelete(req.params.id);
+    if (!deletedAdmin) {
+      console.log('Admin not found for deletion:', req.params.id);
+      return res.status(404).json({ message: "Admin not found" });
+    }
+    console.log('Admin deleted successfully:', req.params.id);
+    res.json({ message: "Admin deleted successfully" });
   } catch (error) {
-    console.log(error);
-    res.status(500).send("Error deleting admin");
+    console.error('Error deleting admin:', error);
+    res.status(500).json({ message: "Error deleting admin", error: error.message });
   }
 };
 
-module.exports = adminController;
+export {
+  adminLogin,
+  initializeAdminDrive,
+  getAdmins,
+  getAdmin,
+  updateAdmin,
+  deleteAdmin
+};

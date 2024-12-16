@@ -3,11 +3,11 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./dashboard.css";
 import { googleLogout } from "@react-oauth/google";
+import { MdOutlineLogout } from "react-icons/md";
 import {
   BsFillArchiveFill,
   BsFillGrid3X3GapFill,
   BsPeopleFill,
-  BsFillBellFill,
 } from "react-icons/bs";
 import {
   BarChart,
@@ -141,9 +141,11 @@ function Dashboard() {
           <span className="sub2-text">Automatic Disbursement Voucher</span>
         </div>
         <nav className="nav-links">
-          <button className="icon-button" onClick={handleProfileClick}> 👤 </button>
+          <button className="icon-button" onClick={handleProfileClick}>
+            {" "}
+            👤{" "}
+          </button>
           <button className="icon-button">🔔</button>
-          <button className="logout-btn" onClick={handleLogout}> Logout </button>
         </nav>
       </header>
       <div className="layout">
@@ -158,13 +160,15 @@ function Dashboard() {
           <button className="sidebar-btn" onClick={handleStaffClick}>
             Staff
           </button>
-          <button className="sidebar-btn">Google Drive</button>
+          <button className="log-btn" onClick={handleLogout}>
+            Logout
+            <MdOutlineLogout className="logout-icon" />
+          </button>
         </aside>
         <main className="main-container">
           <div className="main-title">
             <h3>DASHBOARD</h3>
           </div>
-
           <div className="main-cards">
             <div className="card">
               <div className="card-inner">
@@ -188,7 +192,10 @@ function Dashboard() {
               <h1>{taskCount}</h1>
             </div>
           </div>
-          <br/> <br/><br/><br/><br/>
+          <br /> <br />
+          <br />
+          <br />
+          <br />
           <div className="charts">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./signup.css";
@@ -13,7 +13,9 @@ function Signup() {
   const [password, setPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [recaptchaValue, setRecaptchaValue] = useState("");
+  const recaptchaRef = useRef(null); // Add this line
   const [isSubmitting, setIsSubmitting] = useState(false); // Prevent double submits
+  const [role, setRole] = useState("staff"); // Add state for role
   const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
@@ -21,6 +23,8 @@ function Signup() {
   };
 
   const handleRecaptchaChange = (value) => {
+    console.log("reCAPTCHA value changed");
+    console.log("reCAPTCHA value:", value);
     setRecaptchaValue(value);
   };
 
@@ -39,6 +43,7 @@ function Signup() {
         name,
         email,
         password,
+        role, // Include role in the request
         recaptcha: recaptchaValue,
       });
 
@@ -48,6 +53,12 @@ function Signup() {
       }
     } catch (error) {
       console.error("Error during sign-up:", error);
+
+      // Reset reCAPTCHA on error
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
+        setRecaptchaValue("");
+      }
 
       if (error.response) {
         // Backend errors
@@ -101,6 +112,15 @@ function Signup() {
               onChange={(e) => setEmail(e.target.value)}
               required
             />
+            <label>Role</label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              required
+            >
+              <option value="admin">Admin</option>
+              <option value="staff">Staff</option>
+            </select>
             <label>Password</label>
             <input
               type={passwordVisible ? "text" : "password"}
@@ -120,6 +140,7 @@ function Signup() {
             </p>
             <br />
             <ReCAPTCHA
+              ref={recaptchaRef}
               sitekey={RECAPTCHA_SITE_KEY}
               onChange={handleRecaptchaChange}
             />

@@ -9,12 +9,24 @@ dotenv.config();
 const app = express();
 
 // Check if MONGODB environment variable is defined
-if (!process.env.MONGODB) {
-  console.error("MongoDB connection string (MONGODB) is missing in .env");
-  process.exit(1); // Exit if MONGODB is not provided
+if (!process.env.MONGODB_URI) {
+  console.error("MongoDB connection string (MONGODB_URI) is missing in .env");
+  process.exit(1); // Exit if MONGODB_URI is not provided
 }
 
-app.use(cors());
+// Check if JWT_SECRET is defined
+if (!process.env.JWT_SECRET) {
+  console.error("JWT_SECRET is missing in .env");
+  process.exit(1);
+}
+
+// Configure CORS
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
 
 // Middleware to parse JSON requests
 app.use(express.json());
@@ -23,32 +35,44 @@ app.use(express.json());
 import staffRoutes from "./routes/staffRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
 import authenticationRoutes from "./routes/authenticationRoutes.js";
+import voucherRoutes from "./routes/voucherRoute.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 app.use("/api", taskRoutes);
 app.use("/api", staffRoutes);
 app.use("/api", authenticationRoutes);
-
-// MongoDB connection
-mongoose
-  .connect(process.env.MONGODB) // Removed deprecated options
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((error) => console.error("MongoDB connection error:", error));
+app.use("/api", voucherRoutes);
+app.use("/api", adminRoutes);
 
 // Set the port
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8000; // Fixed port to 800
 
-// Start server
-const server = app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// MongoDB connection
+console.log('Attempting to connect to MongoDB Atlas with URI:', process.env.MONGODB_URI);
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log("Successfully connected to MongoDB Atlas");
+    // Test the connection by trying to fetch some data
+    return mongoose.connection.db.listCollections().toArray();
+  })
+  .then((collections) => {
+    console.log("Available collections:", collections.map(c => c.name));
+    // Start the server after successful database connection
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error("MongoDB Atlas connection error:", error);
+    console.error("Full error details:", JSON.stringify(error, null, 2));
+  });
 
 // Graceful shutdown
 process.on("SIGINT", () => {
   console.log("Shutting down server...");
-  server.close(() => {
-    mongoose.connection.close(false, () => {
-      console.log("MongoDB connection closed.");
-      process.exit(0);
-    });
+  mongoose.connection.close(false, () => {
+    console.log("MongoDB connection closed.");
+    process.exit(0);
   });
 });

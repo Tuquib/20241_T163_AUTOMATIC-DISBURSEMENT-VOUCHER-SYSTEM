@@ -5,6 +5,7 @@ import {
   postStaff,
   updateStaff,
   deleteStaff,
+  getStaffByEmail
 } from "../controller/staffController.js";
 
 const router = express.Router();
@@ -14,6 +15,9 @@ router.get("/staff", getStaffs);
 
 // Route to get a single staff by ID
 router.get("/staff/:id", getStaff);
+
+// Route to get a single staff by email
+router.get("/staff/email/:email", getStaffByEmail);
 
 // Route to create a new staff member
 router.post("/staff", postStaff);
