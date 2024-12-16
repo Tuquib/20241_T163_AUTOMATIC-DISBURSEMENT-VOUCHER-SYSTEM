@@ -1,0 +1,203 @@
+@import url("https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: #111150;
+  position: fixed;
+  width: 100%;
+  top: 0;
+}
+
+.logo {
+  width: 50px;
+  height: auto;
+  margin-right: 10px;
+}
+
+.text-container {
+  font-family: "Poppins", sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.logo-text {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+}
+
+.sub-text,
+.sub2-text {
+  font-size: 1rem;
+  color: #cccccc;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+}
+
+.login-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+.cont {
+  padding-top: 4rem;
+}
+
+.bg {
+  width: 100%;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  object-fit: cover;
+  filter: blur(8px);
+}
+
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-dark) 100%);
+  padding: var(--spacing-md);
+}
+
+.login-card {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 400px;
+  margin-left: 480px;
+  margin-top: 2rem;
+}
+
+.login-card h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 1.5rem;
+}
+
+.login-card form {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-card label {
+  color: #555;
+  margin-bottom: 0.5rem;
+}
+
+.login-card input {
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  background-color: white;
+  color: #000;
+}
+
+.login-card input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.password-toggle-login {
+  position: absolute;
+  left: 818px;
+  transform: translateY(500%);
+  cursor: pointer;
+  color: #b2afaf;
+}
+
+.login-card button {
+  background: #007bff;
+  color: white;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 1rem;
+}
+
+.login-card button:hover {
+  background: #0056b3;
+}
+
+.login-card p {
+  text-align: center;
+  margin-top: 1rem;
+  color: #666;
+  cursor: pointer;
+}
+
+.login-card p:hover {
+  color: #007bff;
+}
+
+/* Google Button */
+.login-card button[onclick="handleGoogleLogin()"] {
+  background: white;
+  color: #5f6368;
+  border: 2px solid #e0e0e0;
+  padding: 0.8rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.login-card button[onclick="handleGoogleLogin()"]:hover {
+  background: #f8f9fa;
+  border-color: #dadce0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ReCAPTCHA Container */
+.recaptcha-container {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+@media (max-width: 768px) {
+  .login-card {
+    width: 90%;
+    margin: 2rem auto;
+  }
+  
+  .password-toggle-login {
+    right: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: var(--spacing-lg);
+  }
+}
