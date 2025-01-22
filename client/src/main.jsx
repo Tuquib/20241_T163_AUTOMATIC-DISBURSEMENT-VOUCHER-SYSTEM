@@ -15,6 +15,7 @@ import StaffTask from "./staff/staffTask.jsx";
 import Profile from "./admin/profile.jsx";
 import Voucher from "./staff/createVoucher.jsx";
 import DisbursementVoucher from "./staff/voucher.jsx";
+import StaffProfile from "./staff/staffprofile.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -33,6 +34,7 @@ createRoot(document.getElementById("root")).render(
           <Route path="/profile" element={<Profile />} />
           <Route path="/createVoucher/:taskID" element={<Voucher />} />
           <Route path="/voucher" element={<DisbursementVoucher />} />
+          <Route path="/staffprofile" element={<StaffProfile />} />
         </Routes>
       </GoogleOAuthProvider>
     </Router>

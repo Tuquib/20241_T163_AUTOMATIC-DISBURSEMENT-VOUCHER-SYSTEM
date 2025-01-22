@@ -21,12 +21,18 @@ if (!process.env.JWT_SECRET) {
 }
 
 // Configure CORS
-app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:5173",
+      "http://127.0.0.1:3000",
+    ],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  })
+);
 
 // Middleware to parse JSON requests
 app.use(express.json());
@@ -37,18 +43,25 @@ import taskRoutes from "./routes/taskRoutes.js";
 import authenticationRoutes from "./routes/authenticationRoutes.js";
 import voucherRoutes from "./routes/voucherRoute.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import notificationRoutes from "./routes/notificationRoute.js";
+import voucherLockRoutes from "./routes/voucherLockRoutes.js";
 
 app.use("/api", taskRoutes);
 app.use("/api", staffRoutes);
 app.use("/api", authenticationRoutes);
 app.use("/api", voucherRoutes);
 app.use("/api", adminRoutes);
+app.use("/api", notificationRoutes);
+app.use("/api/voucher-lock", voucherLockRoutes);
 
 // Set the port
 const PORT = process.env.PORT || 8000; // Fixed port to 800
 
 // MongoDB connection
-console.log('Attempting to connect to MongoDB Atlas with URI:', process.env.MONGODB_URI);
+console.log(
+  "Attempting to connect to MongoDB Atlas with URI:",
+  process.env.MONGODB_URI
+);
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => {
@@ -57,7 +70,10 @@ mongoose
     return mongoose.connection.db.listCollections().toArray();
   })
   .then((collections) => {
-    console.log("Available collections:", collections.map(c => c.name));
+    console.log(
+      "Available collections:",
+      collections.map((c) => c.name)
+    );
     // Start the server after successful database connection
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
@@ -67,6 +83,17 @@ mongoose
     console.error("MongoDB Atlas connection error:", error);
     console.error("Full error details:", JSON.stringify(error, null, 2));
   });
+
+// Periodic cleanup of expired locks (every 5 minutes)
+setInterval(async () => {
+  try {
+    await fetch("http://localhost:8000/api/voucher-lock/clear-expired", {
+      method: 'POST'
+    });
+  } catch (error) {
+    console.error("Failed to clear expired locks:", error);
+  }
+}, 5 * 60 * 1000); // Run every 5 minutes
 
 // Graceful shutdown
 process.on("SIGINT", () => {

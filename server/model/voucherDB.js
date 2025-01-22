@@ -5,7 +5,6 @@ import Counter from "./counter.js";
 const voucherSchema = new mongoose.Schema({
   dvNumber: { type: Number, required: true, unique: true },
   fundCluster: { type: Number, required: true },
-  entityName: { type: String, required: true },
   voucherName: { type: String, required: true },
   staffEmail: { type: String, required: true },
   staffName: { type: String, required: true },
@@ -18,6 +17,9 @@ const voucherSchema = new mongoose.Schema({
   },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
+  isLocked: { type: Boolean, default: false },
+  lockedBy: { type: String },
+  lockTimestamp: { type: Date }
 });
 
 // Pre-save middleware for auto-incrementing dvNumber and fundCluster

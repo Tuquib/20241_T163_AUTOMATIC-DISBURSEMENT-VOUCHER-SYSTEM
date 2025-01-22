@@ -9,6 +9,7 @@ import {
   deleteVoucher,
   getDriveVouchers,
   createStaffFolder,
+  updateVoucherStatus,
 } from "../controller/voucherController.js";
 
 const router = express.Router();
@@ -33,6 +34,9 @@ router.post("/vouchers/create-staff-folder", createStaffFolder);
 
 // Update a voucher
 router.patch("/vouchers/:id", updateVoucher);
+
+// Update voucher status
+router.patch("/vouchers/:id/status", updateVoucherStatus);
 
 // Delete a voucher
 router.delete("/vouchers/:id", deleteVoucher);

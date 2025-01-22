@@ -1,5 +1,6 @@
 import Task from "../model/taskDB.js";
 import Staff from "../model/staffDB.js";
+import Notification from "../model/notificationDB.js";
 
 //Get all tasks
 const getTasks = async (req, res) => {
@@ -71,21 +72,39 @@ const getTaskById = async (req, res) => {
 // Create a new task
 const postTask = async (req, res) => {
   try {
-    const { entityName, staff, date, time } = req.body;
+    const { payeeName, staff, date, time } = req.body;
     
     // Validate required fields
-    if (!entityName || !staff || !date || !time) {
+    if (!payeeName || !staff || !date || !time) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
+    // Find staff member to get their name
+    const staffMember = await Staff.findOne({ email: staff });
+    if (!staffMember) {
+      return res.status(400).json({ error: "Staff member not found" });
+    }
+
     const task = new Task({
-      entityName,
+      payeeName,
       staff,
       date,
       time
     });
 
     const savedTask = await task.save();
+
+    // Create notification for the staff
+    const notification = new Notification({
+      message: `New task assigned: Create voucher for ${payeeName}`,
+      type: 'task_assigned',
+      staffEmail: staff,
+      staffName: staffMember.name,
+      read: false,
+      createdAt: new Date()
+    });
+    await notification.save();
+
     res.status(201).json(savedTask);
   } catch (error) {
     console.error("Error creating task:", error);

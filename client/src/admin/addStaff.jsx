@@ -3,6 +3,7 @@ import TextField from "@mui/material/TextField";
 import { useNavigate } from "react-router-dom";
 import { googleLogout } from "@react-oauth/google";
 import { MdOutlineLogout } from "react-icons/md";
+import { FaBell } from 'react-icons/fa';
 import "./addStaff.css";
 import axios from "axios";
 
@@ -19,6 +20,9 @@ function Staff() {
   const [isEditingStaff, setIsEditingStaff] = useState(false);
   const [isAddingStaff, setIsAddingStaff] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -37,6 +41,27 @@ function Staff() {
   useEffect(() => {
     fetchStaff();
   }, []);
+
+  const [userProfile, setUserProfile] = useState({
+    picture: ''
+  });
+
+  useEffect(() => {
+    // Get user info from localStorage
+    const userEmail = localStorage.getItem('userEmail');
+    const userPicture = localStorage.getItem('userPicture');
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+
+    if (!userEmail) {
+      console.error('No user information found');
+      navigate('/');
+      return;
+    }
+
+    setUserProfile({
+      picture: userPicture || userInfo.picture || null
+    });
+  }, [navigate]);
 
   const fetchStaff = async () => {
     try {
@@ -140,6 +165,68 @@ function Staff() {
     navigate("/");
   };
 
+  useEffect(() => {
+    // Fetch notifications
+    const fetchNotifications = async () => {
+      try {
+        const accessToken = localStorage.getItem('access_token');
+        const userEmail = localStorage.getItem('userEmail');
+
+        if (!accessToken || !userEmail) {
+          console.error('No access token or email found');
+          return;
+        }
+
+        const response = await axios.get('http://localhost:8000/api/notifications', {
+          params: { 
+            staffEmail: userEmail,
+            role: 'admin'  // Specify role as admin
+          },
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
+
+        setNotifications(response.data);
+        // Count unread notifications
+        const unread = response.data.filter(notif => !notif.read).length;
+        setUnreadCount(unread);
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+        setError('Failed to fetch notifications');
+      }
+    };
+
+    fetchNotifications();
+    // Poll for new notifications every 30 seconds
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const markAsRead = async (id) => {
+    try {
+      await axios.put(`http://localhost:8000/api/notifications/${id}`);
+      setNotifications(notifications.map(n => 
+        n._id === id ? { ...n, isRead: true } : n
+      ));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+    }
+  };
+
+  const toggleNotifications = () => {
+    setShowNotifications(!showNotifications);
+    if (!showNotifications) {
+      // Mark all as read when opening the panel
+      notifications.forEach(notif => {
+        if (!notif.isRead) {
+          markAsRead(notif._id);
+        }
+      });
+    }
+  };
+
   return (
     <div className="App">
       <header className="navbar">
@@ -150,8 +237,34 @@ function Staff() {
           <span className="sub2-text">Automatic Disbursement Voucher</span>
         </div>
         <nav className="nav-links">
-          <button className="icon-button">👤</button>
-          <button className="icon-button">🔔</button>
+          <button className="icon-button"  onClick={() => navigate("/profile")}> {userProfile.picture ? (
+              <img src={userProfile.picture} alt="profile" className="profile-picture" />
+            ) : (
+              "👤"
+            )}</button>
+          <div className="notification-icon" onClick={toggleNotifications}>
+            <FaBell />
+            {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
+          </div>
+          {showNotifications && (
+            <div className="notification-dropdown">
+              <h3>Notifications</h3>
+              {notifications.length > 0 ? (
+                notifications.map(notification => (
+                  <div 
+                    key={notification._id} 
+                    className={`notification-item ${!notification.isRead ? 'unread' : ''}`}
+                    onClick={() => markAsRead(notification._id)}
+                  >
+                    <p>{notification.message}</p>
+                    <small>{new Date(notification.createdAt).toLocaleString()}</small>
+                  </div>
+                ))
+              ) : (
+                <div className="notification-item">No notifications</div>
+              )}
+            </div>
+          )}
         </nav>
       </header>
       <div className="layout">
@@ -267,12 +380,14 @@ function Staff() {
             </>
           )}
 
-          {isEditingStaff && selectedStaff && (
+          {isEditingStaff && (
             <div className="modal">
               <div className="modal-content">
                 <h3>Edit Staff</h3>
-                <input
-                  type="text"
+                <TextField
+                  fullWidth
+                  margin="normal"
+                  label="Name"
                   value={staffFormValues.name}
                   onChange={(e) =>
                     setStaffFormValues({
@@ -280,10 +395,11 @@ function Staff() {
                       name: e.target.value,
                     })
                   }
-                  placeholder="Name"
                 />
-                <input
-                  type="text"
+                <TextField
+                  fullWidth
+                  margin="normal"
+                  label="Position"
                   value={staffFormValues.position}
                   onChange={(e) =>
                     setStaffFormValues({
@@ -291,9 +407,11 @@ function Staff() {
                       position: e.target.value,
                     })
                   }
-                  placeholder="Position"
                 />
-                <input
+                <TextField
+                  fullWidth
+                  margin="normal"
+                  label="Email"
                   type="email"
                   value={staffFormValues.email}
                   onChange={(e) =>
@@ -302,21 +420,36 @@ function Staff() {
                       email: e.target.value,
                     })
                   }
-                  placeholder="Email"
                 />
-                <input
-                  type="text"
+                <TextField
+                  fullWidth
+                  margin="normal"
+                  label="Contact Number"
                   value={staffFormValues.contactNumber}
                   onChange={(e) =>
                     setStaffFormValues({
                       ...staffFormValues,
-                      contactNumber: parseInt(e.target.value) || "",
+                      contactNumber: e.target.value,
                     })
                   }
-                  placeholder="Contact"
                 />
-                <button onClick={handleUpdateStaff}>Save</button>
-                <button onClick={() => setIsEditingStaff(false)}>Cancel</button>
+                <div className="modal-buttons">
+                <button
+                    className="modal-button update"
+                    onClick={handleUpdateStaff}
+                  >
+                    Update Staff
+                  </button>
+                  <button 
+                    className="modal-button cancel"
+                    onClick={() => {
+                      setIsEditingStaff(false);
+                      setSelectedStaff(null);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
           )}

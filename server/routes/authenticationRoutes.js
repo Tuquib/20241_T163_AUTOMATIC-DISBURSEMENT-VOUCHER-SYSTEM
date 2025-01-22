@@ -6,7 +6,11 @@ import {
   updateLogin,
   deleteLogin,
   handleSignUp,
+  getUserProfile,
+  refreshTokenHandler,
+  updateGoogleProfile,
 } from "../controller/authenticationController.js";
+import { verifyToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -24,5 +28,14 @@ router.patch("/login/:id", updateLogin);
 
 // Route to delete a login member by ID
 router.delete("/login/:id", deleteLogin);
+
+// Route to get user profile
+router.get("/profile", verifyToken, getUserProfile);
+
+// Route to refresh token
+router.post("/refresh-token", refreshTokenHandler);
+
+// Route to update Google profile
+router.post("/update-google-profile", updateGoogleProfile);
 
 export default router;

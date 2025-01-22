@@ -8,67 +8,41 @@ export class GoogleDriveService {
     this.ADMIN_EMAIL = '2201102322@student.buksu.edu.ph';
     this.mainFolderId = '1rVxn_qjZUIxMvLf8yVrzQqkZT1ZnCYQ9'; // Set the known folder ID
     this.adminToken = null;
+    this.adminDrive = null;
+    this.initializeServiceAccount();
+  }
+
+  initializeServiceAccount() {
+    try {
+      const auth = new google.auth.GoogleAuth({
+        credentials: serviceAccountConfig,
+        scopes: ['https://www.googleapis.com/auth/drive']
+      });
+      
+      this.adminDrive = google.drive({ version: 'v3', auth });
+      console.log('Service account initialized successfully');
+    } catch (error) {
+      console.error('Error initializing service account:', error);
+    }
   }
 
   async initializeWithToken(token, userEmail) {
     try {
       console.log('Initializing Google Drive service for:', userEmail);
       
-      // If this is the admin, store their token
-      if (userEmail === this.ADMIN_EMAIL) {
-        console.log('Storing admin token');
-        this.adminToken = token;
-      }
-
-      this.auth = new google.auth.OAuth2(
+      // Create OAuth2 client
+      const oauth2Client = new google.auth.OAuth2(
         "1083555345988-qc172fbg8ss4a7ptr55el7enke7g3s4v.apps.googleusercontent.com",
         serviceAccountConfig.client_secret,
         "http://localhost:3000"
       );
-      this.auth.setCredentials({ access_token: token });
-      this.drive = google.drive({ version: 'v3', auth: this.auth });
-      this.sheets = google.sheets({ version: 'v4', auth: this.auth });
 
-      // Verify the main folder exists and is accessible
-      console.log('Verifying access to main folder:', this.mainFolderId);
-      try {
-        const folder = await this.drive.files.get({
-          fileId: this.mainFolderId,
-          fields: 'id, name'
-        });
-        console.log('Successfully accessed main folder:', folder.data.name);
-      } catch (error) {
-        console.error('Error accessing main folder:', error.message);
-        if (userEmail === this.ADMIN_EMAIL) {
-          // Admin can create a new folder if needed
-          console.log('Creating new main folder as admin...');
-          const folderMetadata = {
-            name: 'Disbursement Voucher',
-            mimeType: 'application/vnd.google-apps.folder'
-          };
+      // Set credentials directly
+      oauth2Client.setCredentials({ access_token: token });
 
-          const newFolder = await this.drive.files.create({
-            resource: folderMetadata,
-            fields: 'id'
-          });
-
-          this.mainFolderId = newFolder.data.id;
-          console.log('Created new main folder:', this.mainFolderId);
-
-          // Set folder permissions
-          await this.drive.permissions.create({
-            fileId: this.mainFolderId,
-            requestBody: {
-              role: 'reader',
-              type: 'anyone',
-              allowFileDiscovery: true
-            }
-          });
-          console.log('Set main folder permissions');
-        } else {
-          throw new Error('Cannot access Disbursement Voucher folder. Please contact admin for access.');
-        }
-      }
+      // Create drive instance
+      this.drive = google.drive({ version: 'v3', auth: oauth2Client });
+      this.sheets = google.sheets({ version: 'v4', auth: oauth2Client });
 
       console.log('Google Drive service initialized successfully');
     } catch (error) {
@@ -194,17 +168,19 @@ export class GoogleDriveService {
       const staffFolderName = `${staffEmail}_DV`;
       let staffFolderId;
 
-      const response = await this.drive.files.list({
+      // Use adminDrive for all operations to maintain ownership
+      const response = await this.adminDrive.files.list({
         q: `mimeType='application/vnd.google-apps.folder' and name='${staffFolderName}' and '${this.mainFolderId}' in parents and trashed=false`,
         fields: 'files(id, name)',
-        spaces: 'drive'
+        spaces: 'drive',
+        supportsAllDrives: true
       });
 
       if (response.data.files && response.data.files.length > 0) {
         staffFolderId = response.data.files[0].id;
         console.log('Found existing staff folder:', staffFolderId);
       } else {
-        // Create new staff folder in main folder
+        // Create new staff folder using admin credentials
         console.log('Creating new staff folder...');
         const folderMetadata = {
           name: staffFolderName,
@@ -212,23 +188,24 @@ export class GoogleDriveService {
           parents: [this.mainFolderId]
         };
 
-        const newFolder = await this.drive.files.create({
+        const newFolder = await this.adminDrive.files.create({
           resource: folderMetadata,
-          fields: 'id'
+          fields: 'id',
+          supportsAllDrives: true
         });
 
         staffFolderId = newFolder.data.id;
         console.log('Created new staff folder:', staffFolderId);
       }
 
-      // Create spreadsheet in staff folder
+      // Create spreadsheet in staff folder using admin credentials
       const resource = {
         name: voucherNumber,
         mimeType: 'application/vnd.google-apps.spreadsheet',
         parents: [staffFolderId]
       };
 
-      const spreadsheet = await this.drive.files.create({
+      const spreadsheet = await this.adminDrive.files.create({
         resource,
         fields: 'id, webViewLink',
         supportsAllDrives: true
@@ -236,9 +213,19 @@ export class GoogleDriveService {
 
       console.log('Created spreadsheet:', spreadsheet.data);
 
-      // Share with staff and admin
-      await this.shareWithStaff(spreadsheet.data.id, staffEmail);
-      await this.shareFileWithAdmin(spreadsheet.data.id);
+      // Share with staff (but keep admin as owner)
+      await this.adminDrive.permissions.create({
+        fileId: spreadsheet.data.id,
+        requestBody: {
+          role: 'writer',
+          type: 'user',
+          emailAddress: staffEmail
+        },
+        supportsAllDrives: true,
+        sendNotificationEmail: false
+      });
+
+      console.log('Shared spreadsheet with staff');
 
       return {
         fileId: spreadsheet.data.id,
@@ -250,12 +237,42 @@ export class GoogleDriveService {
     }
   }
 
+  async setupInitialPermissions(fileId) {
+    try {
+      // Add service account as editor
+      await this.adminDrive.permissions.create({
+        fileId: fileId,
+        requestBody: {
+          role: 'writer',
+          type: 'user',
+          emailAddress: serviceAccountConfig.client_email
+        },
+        supportsAllDrives: true
+      });
+
+      // Add admin as editor
+      await this.adminDrive.permissions.create({
+        fileId: fileId,
+        requestBody: {
+          role: 'writer',
+          type: 'user',
+          emailAddress: this.ADMIN_EMAIL
+        },
+        supportsAllDrives: true
+      });
+
+      console.log('Initial permissions set up successfully');
+    } catch (error) {
+      console.error('Error setting up initial permissions:', error);
+      throw error;
+    }
+  }
+
   async updateSpreadsheetContent(spreadsheetId, voucherData) {
     try {
       const values = [
         ['Disbursement Voucher Details'],
         ['DV Number', voucherData.dvNumber],
-        ['Entity Name', voucherData.entityName],
         ['Fund Cluster', voucherData.fundCluster],
         ['Date', new Date().toLocaleDateString()],
         ['Mode of Payment', voucherData.modeOfPayment],
@@ -359,6 +376,59 @@ export class GoogleDriveService {
     } catch (error) {
       console.error('Error creating staff folder:', error);
       throw error;
+    }
+  }
+
+  async deleteFile(fileId) {
+    try {
+      if (!fileId) {
+        throw new Error('FileId is required');
+      }
+
+      console.log('Attempting to delete file:', fileId);
+      await this.drive.files.delete({
+        fileId: fileId
+      });
+      console.log('File deleted successfully');
+    } catch (error) {
+      console.error('Error in deleteFile:', error);
+      throw error;
+    }
+  }
+
+  async deleteFileAsAdmin(fileId) {
+    try {
+      console.log('Attempting to move file to trash:', fileId);
+      
+      // Instead of deleting, move to trash
+      await this.adminDrive.files.update({
+        fileId: fileId,
+        requestBody: {
+          trashed: true
+        },
+        supportsAllDrives: true
+      });
+      
+      console.log('File moved to trash successfully');
+      return true;
+    } catch (error) {
+      console.error('Error moving file to trash:', error);
+      
+      // If admin drive fails, try with user's drive
+      try {
+        await this.drive.files.update({
+          fileId: fileId,
+          requestBody: {
+            trashed: true
+          },
+          supportsAllDrives: true
+        });
+        console.log('File moved to trash using user credentials');
+        return true;
+      } catch (userError) {
+        console.error('Failed to move file to trash with user credentials:', userError);
+        throw new Error('Could not move the file to trash. Please ensure you have sufficient permissions.');
+      }
     }
   }
 }

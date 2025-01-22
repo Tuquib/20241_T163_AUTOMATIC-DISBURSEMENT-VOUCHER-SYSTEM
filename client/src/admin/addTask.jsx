@@ -10,6 +10,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { googleLogout } from "@react-oauth/google";
 import { MdOutlineLogout } from "react-icons/md";
+import { FaBell } from 'react-icons/fa';
+import dayjs from "dayjs"; // Import dayjs
 
 const clientId =
   "1083555345988-qc172fbg8ss4a7ptr55el7enke7g3s4v.apps.googleusercontent.com";
@@ -27,7 +29,7 @@ const AddTask = () => {
   const handleManageClick = () => navigate("/manage");
 
   // State Variables
-  const [entityName, setEntityName] = useState("");
+  const [payeeName, setPayeeName] = useState("");
   const [staff, setStaff] = useState("");
   const [staffList, setStaffList] = useState([]);
   const [date, setDate] = useState(null);
@@ -36,8 +38,11 @@ const AddTask = () => {
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [isEditingTask, setIsEditingTask] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [taskFormValues, setTaskFormValues] = useState({
-    entityName: "",
+    payeeName: "",
     staff: "",
     date: "",
     time: "",
@@ -48,6 +53,27 @@ const AddTask = () => {
     fetchTasks();
     fetchStaffList();
   }, []);
+
+  const [userProfile, setUserProfile] = useState({
+    picture: ''
+  });
+
+  useEffect(() => {
+    // Get user info from localStorage
+    const userEmail = localStorage.getItem('userEmail');
+    const userPicture = localStorage.getItem('userPicture');
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+
+    if (!userEmail) {
+      console.error('No user information found');
+      navigate('/');
+      return;
+    }
+
+    setUserProfile({
+      picture: userPicture || userInfo.picture || null
+    });
+  }, [navigate]);
 
   const fetchStaffList = async () => {
     try {
@@ -73,11 +99,15 @@ const AddTask = () => {
   // Edit task
   const handleEditTask = (task) => {
     setSelectedTask(task);
+    // Convert the date string to a dayjs object
+    const formattedDate = task.date ? dayjs(task.date) : null;
+    const formattedTime = task.time ? dayjs(task.time, 'HH:mm') : null;
+    
     setTaskFormValues({
-      entityName: task.entityName,
+      payeeName: task.payeeName,
       staff: task.staff,
-      date: task.date,
-      time: task.time,
+      date: formattedDate,
+      time: formattedTime,
     });
     setIsEditingTask(true);
   };
@@ -85,12 +115,20 @@ const AddTask = () => {
   // Update task
   const handleUpdateTask = async () => {
     try {
+      const updatedTask = {
+        payeeName: taskFormValues.payeeName,
+        staff: taskFormValues.staff,
+        date: taskFormValues.date ? taskFormValues.date.format('YYYY-MM-DD') : '',
+        time: taskFormValues.time ? taskFormValues.time.format('HH:mm') : '',
+      };
+
       await axios.patch(
         `http://localhost:8000/api/task/${selectedTask._id}`,
-        taskFormValues
+        updatedTask
       );
       fetchTasks();
       setIsEditingTask(false);
+      setSelectedTask(null);
     } catch (error) {
       console.error("Error updating task:", error);
     }
@@ -118,7 +156,7 @@ const AddTask = () => {
     }
 
     const taskData = {
-      entityName,
+      payeeName: payeeName,
       staff: staff, // Using staff email as identifier
       date: date ? date.format("YYYY-MM-DD") : "",
       time: time ? time.format("HH:mm") : "",
@@ -141,6 +179,68 @@ const AddTask = () => {
     navigate("/");
   };
 
+  useEffect(() => {
+    // Fetch notifications
+    const fetchNotifications = async () => {
+      try {
+        const accessToken = localStorage.getItem('access_token');
+        const userEmail = localStorage.getItem('userEmail');
+
+        if (!accessToken || !userEmail) {
+          console.error('No access token or email found');
+          return;
+        }
+
+        const response = await axios.get('http://localhost:8000/api/notifications', {
+          params: { 
+            staffEmail: userEmail,
+            role: 'admin'  // Specify role as admin
+          },
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
+
+        setNotifications(response.data);
+        // Count unread notifications
+        const unread = response.data.filter(notif => !notif.read).length;
+        setUnreadCount(unread);
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+        setError('Failed to fetch notifications');
+      }
+    };
+
+    fetchNotifications();
+    // Poll for new notifications every 30 seconds
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const markAsRead = async (id) => {
+    try {
+      await axios.put(`http://localhost:8000/api/notifications/${id}`);
+      setNotifications(notifications.map(n => 
+        n._id === id ? { ...n, isRead: true } : n
+      ));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+    }
+  };
+
+  const toggleNotifications = () => {
+    setShowNotifications(!showNotifications);
+    if (!showNotifications) {
+      // Mark all as read when opening the panel
+      notifications.forEach(notif => {
+        if (!notif.isRead) {
+          markAsRead(notif._id);
+        }
+      });
+    }
+  };
+
   return (
     <div className="AddTask">
       <header className="navbar">
@@ -151,8 +251,34 @@ const AddTask = () => {
           <span className="sub2-text">Automatic Disbursement Voucher</span>
         </div>
         <nav className="nav-links">
-          <button className="icon-button">👤</button>
-          <button className="icon-button">🔔</button>
+          <button className="icon-button" onClick={() => navigate("/profile")}> {userProfile.picture ? (
+              <img src={userProfile.picture} alt="profile" className="profile-picture" />
+            ) : (
+              "👤"
+            )}</button>
+          <div className="notification-icon" onClick={toggleNotifications}>
+            <FaBell />
+            {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
+          </div>
+          {showNotifications && (
+            <div className="notification-dropdown">
+              <h3>Notifications</h3>
+              {notifications.length > 0 ? (
+                notifications.map(notification => (
+                  <div 
+                    key={notification._id} 
+                    className={`notification-item ${!notification.isRead ? 'unread' : ''}`}
+                    onClick={() => markAsRead(notification._id)}
+                  >
+                    <p>{notification.message}</p>
+                    <small>{new Date(notification.createdAt).toLocaleString()}</small>
+                  </div>
+                ))
+              ) : (
+                <div className="notification-item">No notifications</div>
+              )}
+            </div>
+          )}
         </nav>
       </header>
 
@@ -183,13 +309,14 @@ const AddTask = () => {
                   <div className="form-row">
                     <TextField
                       id="payee"
-                      label="Entity Name"
+                      label="Payee Name"
                       variant="outlined"
                       required
-                      value={entityName}
-                      onChange={(e) => setEntityName(e.target.value)}
+                      value={payeeName}
+                      onChange={(e) => setPayeeName(e.target.value)}
                     />
                     <TextField
+                    style={{ width: '200px' }}
                       id="type"
                       select
                       label="Staff"
@@ -239,7 +366,7 @@ const AddTask = () => {
               <table className="task-table">
                 <thead>
                   <tr>
-                    <th>Entity Name</th>
+                    <th>Payee Name</th>
                     <th>Staff</th>
                     <th>Date</th>
                     <th>Time</th>
@@ -249,7 +376,7 @@ const AddTask = () => {
                 <tbody>
                   {tasks.map((task) => (
                     <tr key={task._id}>
-                      <td>{task.entityName}</td>
+                      <td>{task.payeeName}</td>
                       <td>{task.staff}</td>
                       <td>{new Date(task.date).toLocaleDateString()}</td>
                       <td>{task.time}</td>
@@ -270,54 +397,85 @@ const AddTask = () => {
           )}
 
           {isEditingTask && (
-            <div className="edit-form">
-              <h3>Edit Task</h3>
-              <input
-                type="text"
-                value={taskFormValues.entityName}
-                onChange={(e) =>
-                  setTaskFormValues({
-                    ...taskFormValues,
-                    entityName: e.target.value,
-                  })
-                }
-                placeholder="Payee Name"
-              />
-              <input
-                type="text"
-                value={taskFormValues.staff}
-                onChange={(e) =>
-                  setTaskFormValues({
-                    ...taskFormValues,
-                    staff: e.target.value,
-                  })
-                }
-                placeholder="Type"
-              />
-              <input
-                className="date"
-                type="date"
-                value={taskFormValues.date}
-                onChange={(e) =>
-                  setTaskFormValues({
-                    ...taskFormValues,
-                    date: e.target.value,
-                  })
-                }
-              />
-              <input
-                className="time"
-                type="time"
-                value={taskFormValues.time}
-                onChange={(e) =>
-                  setTaskFormValues({
-                    ...taskFormValues,
-                    time: e.target.value,
-                  })
-                }
-              />
-              <button onClick={handleUpdateTask}>Update Task</button>
-              <button onClick={() => setIsEditingTask(false)}>Cancel</button>
+            <div className="modal">
+              <div className="modal-content">
+                <h3>Edit Task</h3>
+                <TextField
+                  fullWidth
+                  margin="normal"
+                  label="Payee Name"
+                  value={taskFormValues.payeeName}
+                  onChange={(e) =>
+                    setTaskFormValues({
+                      ...taskFormValues,
+                      payeeName: e.target.value,
+                    })
+                  }
+                />
+                <TextField
+                  fullWidth
+                  margin="normal"
+                  select
+                  label="Staff"
+                  value={taskFormValues.staff}
+                  onChange={(e) =>
+                    setTaskFormValues({
+                      ...taskFormValues,
+                      staff: e.target.value,
+                    })
+                  }
+                >
+                  {staffList.map((staffMember) => (
+                    <MenuItem key={staffMember.email} value={staffMember.email}>
+                      {staffMember.name} ({staffMember.position})
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DatePicker
+                    label="Date"
+                    value={taskFormValues.date}
+                    onChange={(newDate) =>
+                      setTaskFormValues({
+                        ...taskFormValues,
+                        date: newDate,
+                      })
+                    }
+                    slotProps={{ textField: { fullWidth: true, margin: 'normal' } }}
+                  />
+                </LocalizationProvider>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <TimePicker
+                    label="Time"
+                    value={taskFormValues.time}
+                    onChange={(newTime) =>
+                      setTaskFormValues({
+                        ...taskFormValues,
+                        time: newTime,
+                      })
+                    }
+                    slotProps={{ textField: { fullWidth: true, margin: 'normal' } }}
+                  />
+                </LocalizationProvider>
+                <div className="modal-buttons">
+                <button
+                    className="modal-button update"
+                    onClick={handleUpdateTask}
+                  >
+                    Update Task
+                  </button>
+                  <button 
+                    className="modal-button cancel"
+                    onClick={() => {
+                      setIsEditingTask(false);
+                      setSelectedTask(null);
+                    }}
+                  >
+                    Cancel
+                  </button>
+
+                </div>
+              </div>
             </div>
           )}
         </main>

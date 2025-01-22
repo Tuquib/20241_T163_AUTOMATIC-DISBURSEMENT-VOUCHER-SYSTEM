@@ -121,10 +121,11 @@
 }
 
 .status-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 50px;
-  font-size: 0.875rem;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
   font-weight: 500;
+  text-transform: capitalize;
 }
 
 .status-badge.pending {
@@ -142,9 +143,16 @@
   color: #721c24;
 }
 
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
 .view-drive-btn {
-  padding: 0.5rem 1rem;
-  background-color: #1a73e8;
+  padding: 6px 12px;
+  margin-right: 8px;
+  background-color: #2196f3;
   color: white;
   border: none;
   border-radius: 4px;
@@ -153,7 +161,7 @@
 }
 
 .view-drive-btn:hover {
-  background-color: #1557b0;
+  background-color: #1976d2;
 }
 
 .log-btn {
@@ -223,6 +231,109 @@
 
 .no-vouchers-message .create-first-voucher:hover {
   background-color: #1565c0;
+}
+
+/* Notification Styles */
+.notification-container {
+  position: relative;
+  display: inline-block;
+}
+
+.notification-button {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 8px;
+  position: relative;
+  font-size: 1.2rem;
+}
+
+.notification-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #ff4444;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 0.7rem;
+  min-width: 18px;
+  text-align: center;
+}
+
+.notification-panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 300px;
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.notification-panel h3 {
+  margin: 0 0 12px 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.notification-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notification-item {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-item:hover {
+  background-color: #f5f5f5;
+}
+
+.notification-item.unread {
+  background-color: #f0f7ff;
+}
+
+.notification-item.read {
+  opacity: 0.7;
+}
+
+.notification-item p {
+  margin: 0 0 4px 0;
+  color: #333;
+}
+
+.notification-item small {
+  color: #666;
+  font-size: 0.8rem;
+}
+
+/* Logout button */
+.logout-button {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 8px;
+  margin-left: 16px;
+  font-size: 1.2rem;
+}
+
+.logout-button:hover {
+  color: #f0f0f0;
 }
 
 * {

@@ -33,7 +33,9 @@ function Login() {
           "Google login successful, got access token:",
           response.access_token ? "Yes" : "No"
         );
-        localStorage.setItem("googleToken", response.access_token);
+        
+        // Store access token consistently
+        localStorage.setItem("access_token", response.access_token);
 
         console.log("Fetching user info from Google...");
         // Get user info from Google
@@ -47,12 +49,25 @@ function Login() {
         console.log("Got user info:", {
           email: userInfo.data.email,
           name: userInfo.data.name,
+          picture: userInfo.data.picture,
         });
 
         // Store user info separately
         localStorage.setItem("userEmail", userInfo.data.email);
         localStorage.setItem("userName", userInfo.data.name);
+        localStorage.setItem("userPicture", userInfo.data.picture);
         localStorage.setItem("userInfo", JSON.stringify(userInfo.data));
+
+        // Update user's profile picture in the database
+        try {
+          await axios.post("http://localhost:8000/api/update-google-profile", {
+            email: userInfo.data.email,
+            picture: userInfo.data.picture,
+          });
+          console.log("Profile picture updated in database");
+        } catch (error) {
+          console.error("Error updating profile picture:", error);
+        }
 
         console.log("Checking user role (staff vs admin)...");
         // Check if the user's email exists in staff collection

@@ -78,7 +78,7 @@ const handleLogin = async (req, res) => {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    // Generate JWT token
+    // Generate JWT token with longer expiration
     const token = jwt.sign(
       {
         userId: user._id,
@@ -86,10 +86,19 @@ const handleLogin = async (req, res) => {
         role: user.role,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "7d" } // Changed to 7 days
     );
 
-    console.log("JWT token generated successfully");
+    // Generate refresh token
+    const refreshToken = jwt.sign(
+      {
+        userId: user._id,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" }
+    );
+
+    console.log("JWT tokens generated successfully");
     console.log(
       "🎉 Login successful with reCAPTCHA verification for user:",
       email
@@ -99,15 +108,14 @@ const handleLogin = async (req, res) => {
     // Send single success response with all information
     return res.status(200).json({
       success: true,
-      recaptchaVerified: true,
-      message: "Login successful with reCAPTCHA verification",
       token,
+      refreshToken,
       user: {
         id: user._id,
         email: user.email,
-        name: user.name,
         role: user.role,
-      },
+        name: user.name
+      }
     });
   } catch (error) {
     console.error("❌ Login error:", error);
@@ -216,6 +224,90 @@ const deleteLogin = async (req, res) => {
   }
 };
 
+// Get user profile
+const getUserProfile = async (req, res) => {
+  try {
+    // req.user is set by the verifyToken middleware
+    const user = await Authentication.findById(req.user.userId).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({
+      name: user.name || 'User',
+      email: user.email,
+      role: user.role,
+      picture: user.picture || null
+    });
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    res.status(500).json({ error: "Error retrieving user profile" });
+  }
+};
+
+// Refresh token handler
+const refreshTokenHandler = async (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(401).json({ error: "Refresh token required" });
+  }
+
+  try {
+    // Verify refresh token
+    const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+    
+    // Find user
+    const user = await Authentication.findById(decoded.userId);
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Generate new access token
+    const newToken = jwt.sign(
+      {
+        userId: user._id,
+        email: user.email,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.status(200).json({
+      token: newToken
+    });
+  } catch (error) {
+    console.error('Refresh token error:', error);
+    return res.status(401).json({ error: "Invalid refresh token" });
+  }
+};
+
+// Update user's Google profile
+const updateGoogleProfile = async (req, res) => {
+  try {
+    const { email, picture } = req.body;
+
+    // Find and update user
+    const user = await Authentication.findOneAndUpdate(
+      { email },
+      { picture },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    console.error('Error updating Google profile:', error);
+    res.status(500).json({ error: "Error updating profile" });
+  }
+};
+
 export {
   getLogins,
   getLogin,
@@ -223,4 +315,7 @@ export {
   updateLogin,
   deleteLogin,
   handleSignUp,
+  getUserProfile,
+  refreshTokenHandler,
+  updateGoogleProfile,
 };
