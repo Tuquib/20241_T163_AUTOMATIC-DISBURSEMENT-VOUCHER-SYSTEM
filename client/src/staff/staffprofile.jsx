@@ -4,6 +4,7 @@ import "./staffprofile.css";
 import { googleLogout } from "@react-oauth/google";
 import { MdOutlineLogout } from "react-icons/md";
 import { FaBell} from 'react-icons/fa';
+import axios from "axios";
 
 const onSuccess = () => {
   console.log("Logout Successfully!");
@@ -38,7 +39,7 @@ function StaffProfile() {
       name: userName || userInfo.name || "User",
       email: userEmail,
       role: userRole || "staff",
-      picture: userPicture || userInfo.picture || null,
+      picture: userPicture || userInfo.picture || "User",
     });
   }, [navigate]);
 
@@ -66,7 +67,7 @@ function StaffProfile() {
   };
 
    // Fetch notifications
-   const fetchNotifications = async () => {
+  const fetchNotifications = async () => {
     try {
       const accessToken = localStorage.getItem('access_token');
       const staffEmail = localStorage.getItem('userEmail');
@@ -92,7 +93,6 @@ function StaffProfile() {
       setUnreadCount(unread);
     } catch (error) {
       console.error('Error fetching notifications:', error);
-      setError('Failed to fetch notifications');
     }
   };
 

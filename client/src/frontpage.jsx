@@ -9,10 +9,6 @@ function Frontpage() {
     navigate("/login");
   };
 
-  const handleSignupClick = () => {
-    navigate("/signup");
-  };
-
   return (
     <div className="App">
       <header className="navbar">
@@ -25,9 +21,6 @@ function Frontpage() {
         <nav className="nav-links">
           <button className="login-btn" onClick={handleLoginClick}>
             Login
-          </button>
-          <button className="login-btn" onClick={handleSignupClick}>
-            Signup
           </button>
         </nav>
       </header>

@@ -279,29 +279,35 @@ function Manage() {
             ) : (
               "👤"
             )}</button>
-          <div className="notification-icon" onClick={toggleNotifications}>
-            <FaBell />
-            {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
-          </div>
-          {showNotifications && (
-            <div className="notification-dropdown">
-              <h3>Notifications</h3>
-              {notifications.length > 0 ? (
-                notifications.map(notification => (
-                  <div 
-                    key={notification._id} 
-                    className={`notification-item ${!notification.isRead ? 'unread' : ''}`}
-                    onClick={() => markAsRead(notification._id)}
-                  >
-                    <p>{notification.message}</p>
-                    <small>{new Date(notification.createdAt).toLocaleString()}</small>
-                  </div>
-                ))
-              ) : (
-                <div className="notification-item">No notifications</div>
+          <div className="notification-container">
+            <button className="notification-button" onClick={toggleNotifications}>
+              <FaBell />
+              {unreadCount > 0 && (
+                <span className="notification-badge">{unreadCount}</span>
               )}
-            </div>
-          )}
+            </button>
+            {showNotifications && (
+              <div className="notification-panel">
+                <h3>Notifications</h3>
+                {notifications.length === 0 ? (
+                  <p>No notifications</p>
+                ) : (
+                  <ul className="notification-list">
+                    {notifications.map(notification => (
+                      <li
+                        key={notification._id}
+                        className={`notification-item ${notification.read ? 'read' : 'unread'}`}
+                        onClick={() => markAsRead(notification._id)}
+                      >
+                        <p>{notification.message}</p>
+                        <small>{new Date(notification.createdAt).toLocaleString()}</small>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
         </nav>
       </header>
       <div className="layout">

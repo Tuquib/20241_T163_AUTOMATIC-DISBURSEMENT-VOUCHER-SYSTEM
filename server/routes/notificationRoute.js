@@ -3,6 +3,22 @@ import Notification from '../model/notificationDB.js';
 
 const router = express.Router();
 
+router.get('/admin/notification', async (req, res) => {
+    try {
+        // Fetch notifications where type includes "new_voucher"
+        const notifications = await Notification.find({
+            type: { $in: ["new_voucher"] }
+        })
+        .sort({ createdAt: -1 }) // Sort by most recent
+        .limit(50); // Limit to 50 notifications
+        
+        res.json(notifications);
+    } catch (error) {
+        console.error('Error fetching admin notifications:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // Get notifications based on role
 router.get('/notifications', async (req, res) => {
     try {
@@ -16,7 +32,7 @@ router.get('/notifications', async (req, res) => {
 
         // Filter notifications based on role
         if (role === 'admin') {
-            query.type = 'new_voucher'; // Admin only sees new voucher notifications
+            query.type = { $in: ['new_voucher']}; // Admin sees all types of notifications
         } else {
             // Staff sees voucher approval and task notifications
             query.type = { $in: ['voucher_approved', 'task_assigned'] };

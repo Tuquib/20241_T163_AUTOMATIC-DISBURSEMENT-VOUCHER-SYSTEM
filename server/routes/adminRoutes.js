@@ -4,9 +4,8 @@ import {
   adminLogin, 
   initializeAdminDrive, 
   getAdmins, 
-  getAdmin, 
   updateAdmin, 
-  deleteAdmin 
+  deleteAdmin,
 } from "../controller/adminController.js";
 
 const adminRoutes = express.Router();
@@ -20,7 +19,6 @@ adminRoutes.post("/admin/initialize-drive", initializeAdminDrive);
 
 // Other admin routes
 adminRoutes.get("/admin", getAdmins);
-adminRoutes.get("/admin/:id", getAdmin);
 adminRoutes.patch("/admin/:id", updateAdmin);
 adminRoutes.delete("/admin/:id", deleteAdmin);
 

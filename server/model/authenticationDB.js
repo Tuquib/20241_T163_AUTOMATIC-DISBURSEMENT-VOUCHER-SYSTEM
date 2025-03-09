@@ -19,7 +19,10 @@ const authenticationSchema = new mongoose.Schema({
     enum: ["admin", "staff"],
     required: true,
   },
-  picture: String,
+  picture:  {
+    type: String,
+    required: false,
+  }
 });
 
 const Authentication = mongoose.model("Authentication", authenticationSchema);

@@ -4,7 +4,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import "./index.css";
 import App from "./frontpage.jsx";
-import Signup from "./signup.jsx";
 import Login from "./login.jsx";
 import Staff from "./admin/addStaff.jsx";
 import Task from "./admin/addTask.jsx";
@@ -23,7 +22,6 @@ createRoot(document.getElementById("root")).render(
       <GoogleOAuthProvider clientId="1083555345988-qc172fbg8ss4a7ptr55el7enke7g3s4v.apps.googleusercontent.com">
         <Routes>
           <Route path="/" element={<App />} />
-          <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/manage" element={<Manage />} />

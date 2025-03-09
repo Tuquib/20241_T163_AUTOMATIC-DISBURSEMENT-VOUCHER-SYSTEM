@@ -76,21 +76,6 @@ const getAdmins = async (req, res) => {
   }
 };
 
-// Get a single admin
-const getAdmin = async (req, res) => {
-  try {
-    console.log('Fetching admin by ID:', req.params.id);
-    const admin = await Admin.findById(req.params.id);
-    if (!admin) {
-      console.log('Admin not found:', req.params.id);
-      return res.status(404).json({ message: "Admin not found" });
-    }
-    res.json(admin);
-  } catch (error) {
-    console.error('Error retrieving admin:', error);
-    res.status(500).json({ message: "Error retrieving admin", error: error.message });
-  }
-};
 
 // Update admin
 const updateAdmin = async (req, res) => {
@@ -130,11 +115,11 @@ const deleteAdmin = async (req, res) => {
   }
 };
 
+
 export {
   adminLogin,
   initializeAdminDrive,
   getAdmins,
-  getAdmin,
   updateAdmin,
   deleteAdmin
 };

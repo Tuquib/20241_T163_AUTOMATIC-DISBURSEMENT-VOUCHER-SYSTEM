@@ -58,6 +58,8 @@ function Login() {
         localStorage.setItem("userPicture", userInfo.data.picture);
         localStorage.setItem("userInfo", JSON.stringify(userInfo.data));
 
+
+
         // Update user's profile picture in the database
         try {
           await axios.post("http://localhost:8000/api/update-google-profile", {
@@ -251,8 +253,6 @@ function Login() {
             >
               {passwordVisible ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
             </div>
-            <p onClick={() => navigate("/signup")}>No Account? Sign Up Here</p>
-            <br />
             <ReCAPTCHA
               ref={recaptchaRef}
               sitekey={RECAPTCHA_SITE_KEY}

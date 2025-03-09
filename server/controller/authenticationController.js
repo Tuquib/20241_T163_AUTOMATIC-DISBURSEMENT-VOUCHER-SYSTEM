@@ -317,5 +317,5 @@ export {
   handleSignUp,
   getUserProfile,
   refreshTokenHandler,
-  updateGoogleProfile,
+  updateGoogleProfile
 };

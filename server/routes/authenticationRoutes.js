@@ -8,7 +8,7 @@ import {
   handleSignUp,
   getUserProfile,
   refreshTokenHandler,
-  updateGoogleProfile,
+  updateGoogleProfile
 } from "../controller/authenticationController.js";
 import { verifyToken } from "../middleware/authMiddleware.js";
 
