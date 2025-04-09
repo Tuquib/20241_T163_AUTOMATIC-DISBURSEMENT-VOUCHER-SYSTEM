@@ -46,10 +46,11 @@ import adminRoutes from "./routes/adminRoutes.js";
 import notificationRoutes from "./routes/notificationRoute.js";
 import voucherLockRoutes from "./routes/voucherLockRoutes.js";
 
+// Register routes in correct order
+app.use("/api", voucherRoutes);  // Register voucher routes first
 app.use("/api", taskRoutes);
 app.use("/api", staffRoutes);
 app.use("/api", authenticationRoutes);
-app.use("/api", voucherRoutes);
 app.use("/api", adminRoutes);
 app.use("/api", notificationRoutes);
 app.use("/api/voucher-lock", voucherLockRoutes);

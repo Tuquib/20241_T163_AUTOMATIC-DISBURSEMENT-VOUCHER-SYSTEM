@@ -14,7 +14,7 @@ import StaffTask from "./staff/staffTask.jsx";
 import Profile from "./admin/profile.jsx";
 import Voucher from "./staff/createVoucher.jsx";
 import DisbursementVoucher from "./staff/voucher.jsx";
-import StaffProfile from "./staff/staffprofile.jsx";
+import StaffProfile from "./staff/staffProfile.jsx";  
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

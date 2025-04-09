@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import "./staffTask.css";
 import { googleLogout } from "@react-oauth/google";
 import axios from "axios";
 import { MdOutlineLogout } from "react-icons/md";
-import { FaBell } from "react-icons/fa";
+import { FaBell, FaCheckCircle, FaClipboardCheck } from "react-icons/fa";
+import "./staffTask.css";
+import "./shared.css";
 
 function StaffTask() {
   const navigate = useNavigate();
@@ -25,31 +26,29 @@ function StaffTask() {
     try {
       const accessToken = localStorage.getItem("access_token");
       const staffEmail = localStorage.getItem("userEmail");
-
-      if (!accessToken || !staffEmail) {
+      
+      if (!staffEmail || !accessToken) {
         console.error("No access token or email found");
         return;
       }
 
       const response = await axios.get(
-        "http://localhost:8000/api/notifications",
+        "http://localhost:8000/api/notifications/staff",
         {
-          params: {
-            staffEmail,
-            role: "staff",
-          },
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+          params: { staffEmail },
+          headers: { 
+            Authorization: `Bearer ${accessToken}` 
+          }
         }
       );
 
-      setNotifications(response.data);
-      const unread = response.data.filter((notif) => !notif.read).length;
-      setUnreadCount(unread);
+      if (response.data && Array.isArray(response.data)) {
+        setNotifications(response.data);
+        const unread = response.data.filter(notif => !notif.read).length;
+        setUnreadCount(unread);
+      }
     } catch (error) {
       console.error("Error fetching notifications:", error);
-      setError("Failed to fetch notifications");
     }
   };
 
@@ -57,21 +56,29 @@ function StaffTask() {
   const markAsRead = async (notificationId) => {
     try {
       const accessToken = localStorage.getItem("access_token");
+      const staffEmail = localStorage.getItem("userEmail");
+      
+      if (!accessToken || !staffEmail) {
+        console.error("No access token or email found");
+        return;
+      }
+
       await axios.patch(
-        `http://localhost:8000/api/notifications/${notificationId}`,
-        { read: true },
+        `http://localhost:8000/api/notifications/staff/${notificationId}/read`,
+        { staffEmail },
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+            Authorization: `Bearer ${accessToken}`
+          }
         }
       );
-      setNotifications((prevNotifications) =>
-        prevNotifications.map((notif) =>
+
+      setNotifications(prevNotifications =>
+        prevNotifications.map(notif =>
           notif._id === notificationId ? { ...notif, read: true } : notif
         )
       );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
+      setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
       console.error("Error marking notification as read:", error);
     }
@@ -81,7 +88,7 @@ function StaffTask() {
   const toggleNotifications = () => {
     setShowNotifications(!showNotifications);
     if (!showNotifications) {
-      notifications.forEach((notif) => {
+      notifications.forEach(notif => {
         if (!notif.read) {
           markAsRead(notif._id);
         }
@@ -149,10 +156,10 @@ function StaffTask() {
     fetchTasks();
   }, [navigate]);
 
-  // Effect for notifications
+  // Effect for fetching notifications periodically
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000);
+    const interval = setInterval(fetchNotifications, 30000); // Poll every 30 seconds
     return () => clearInterval(interval);
   }, []);
 
@@ -200,26 +207,36 @@ function StaffTask() {
               )}
             </button>
             {showNotifications && (
-              <div className="notification-panel">
-                <h3>Notifications</h3>
-                {notifications.length === 0 ? (
-                  <p>No notifications</p>
-                ) : (
-                  notifications.map((notification) => (
-                    <div
-                      key={notification._id}
-                      className={`notification-item ${
-                        notification.read ? "read" : "unread"
-                      }`}
-                      onClick={() => markAsRead(notification._id)}
-                    >
-                      <p>{notification.message}</p>
-                      <small>
-                        {new Date(notification.createdAt).toLocaleString()}
-                      </small>
-                    </div>
-                  ))
-                )}
+              <div className="notification-dropdown">
+                <div className="notification-header">
+                  <h3>Notifications</h3>
+                  <span>{unreadCount} unread</span>
+                </div>
+                <div className="notification-list">
+                  {notifications.length === 0 ? (
+                    <div className="no-notifications">No notifications</div>
+                  ) : (
+                    notifications.map((notification) => (
+                      <div
+                        key={notification._id}
+                        className={`notification-item ${!notification.read ? 'unread' : ''}`}
+                        onClick={() => markAsRead(notification._id)}
+                      >
+                        <div className="notification-icon">
+                          {notification.type === 'voucher_approved' ? (
+                            <FaCheckCircle className="approved-icon" />
+                          ) : (
+                            <FaClipboardCheck className="task-icon" />
+                          )}
+                        </div>
+                        <div className="notification-content">
+                          <p>{notification.message}</p>
+                          <small>{new Date(notification.createdAt).toLocaleString()}</small>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             )}
           </div>

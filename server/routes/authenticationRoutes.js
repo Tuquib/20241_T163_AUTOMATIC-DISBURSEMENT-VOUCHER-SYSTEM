@@ -1,41 +1,56 @@
 import express from "express";
+const router = express.Router();
+
 import {
   getLogins,
   getLogin,
   handleLogin,
+  handleSignUp,
   updateLogin,
   deleteLogin,
-  handleSignUp,
   getUserProfile,
   refreshTokenHandler,
-  updateGoogleProfile
+  updateGoogleProfile,
+  requestPasswordReset,
+  verifyCode,
+  verifyCodeAndResetPassword
 } from "../controller/authenticationController.js";
 import { verifyToken } from "../middleware/authMiddleware.js";
 
-const router = express.Router();
+// Get all logins
+router.get("/", getLogins);
 
-// Route to get all login
-router.get("/login", getLogins);
+// Get single login
+router.get("/:id", getLogin);
 
-// Route to create a new login member (you can keep it for registration purposes if needed)
+// Get user profile
+router.get("/profile/:id", verifyToken, getUserProfile);
+
+// Add new login
+router.post("/", handleSignUp);
+
+// Login user
 router.post("/login", handleLogin);
 
-// Route for user signup
-router.post("/signup", handleSignUp);
-
-// Route to update an existing login member by ID
-router.patch("/login/:id", updateLogin);
-
-// Route to delete a login member by ID
-router.delete("/login/:id", deleteLogin);
-
-// Route to get user profile
-router.get("/profile", verifyToken, getUserProfile);
-
-// Route to refresh token
+// Refresh token
 router.post("/refresh-token", refreshTokenHandler);
 
-// Route to update Google profile
+// Update google profile
 router.post("/update-google-profile", updateGoogleProfile);
+
+// Update login
+router.patch("/:id", updateLogin);
+
+// Delete login
+router.delete("/:id", deleteLogin);
+
+// Route for requesting password reset
+router.post("/forgot-password", requestPasswordReset);
+
+// Route for verifying code
+router.post("/verify-code", verifyCode);
+
+// Route for verifying code and resetting password
+router.post("/verify-and-reset", verifyCodeAndResetPassword);
 
 export default router;

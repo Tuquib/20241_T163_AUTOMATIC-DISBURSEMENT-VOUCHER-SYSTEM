@@ -59,50 +59,48 @@ function Manage() {
 
   const fetchVouchers = async () => {
     try {
-      const accessToken = localStorage.getItem('access_token');
-      
-      if (!accessToken) {
-        console.error('No access token found');
-        return;
-      }
+      setLoading(true);
+      setError(null);
+      const accessToken = localStorage.getItem("access_token");
 
       const response = await axios.get("http://localhost:8000/api/vouchers", {
-        params: { 
-          accessToken,
+        params: {
           isAdmin: true
         },
         headers: {
-          'Authorization': `Bearer ${accessToken}`
+          Authorization: `Bearer ${accessToken}`
         }
       });
-      
+
       console.log("Raw voucher data:", response.data);
       
       // Format the vouchers data consistently
       const formattedVouchers = response.data.map(voucher => {
-        const voucherId = voucher._id || voucher.id;
-        console.log("Processing voucher:", { ...voucher, _id: voucherId });
+        const voucherId = voucher.id;
+        console.log("Processing voucher:", { ...voucher, id: voucherId });
         
         return {
-          _id: voucherId,
           id: voucherId,
-          name: voucher.name || `DV_${voucher.dvNumber || 'Unknown'}`,
-          createdTime: voucher.createdTime || new Date().toISOString(),
-          modifiedTime: voucher.modifiedTime || new Date().toISOString(),
-          status: voucher.status ? voucher.status.charAt(0).toUpperCase() + voucher.status.slice(1) : 'Pending', 
-          webViewLink: voucher.webViewLink || '#',
+          name: voucher.name,
+          createdTime: new Date(voucher.createdTime).toLocaleDateString(),
+          modifiedTime: new Date(voucher.modifiedTime).toLocaleDateString(),
+          status: voucher.status,
+          webViewLink: voucher.webViewLink,
           driveFileId: voucher.driveFileId,
           staffName: voucher.staffName,
           staffEmail: voucher.staffEmail,
-          dvNumber: voucher.dvNumber
+          dvNumber: voucher.dvNumber,
+          fundCluster: voucher.fundCluster
         };
       });
       
       console.log("Formatted vouchers:", formattedVouchers);
       setVouchers(formattedVouchers);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching vouchers:", error);
       setError("Failed to fetch vouchers. Please try again.");
+      setLoading(false);
     }
   };
 
@@ -141,7 +139,7 @@ function Manage() {
 
       if (response.status === 200) {
         // Update the UI immediately using the current state
-        setVouchers(prevVouchers => prevVouchers.filter(voucher => voucher._id !== voucherId));
+        setVouchers(prevVouchers => prevVouchers.filter(voucher => voucher.id !== voucherId));
         console.log("Voucher deleted successfully:", response.data);
       }
     } catch (error) {
@@ -180,7 +178,7 @@ function Manage() {
         // Update the local state first
         setVouchers(prevVouchers => 
           prevVouchers.map(voucher => 
-            voucher._id === voucherId 
+            voucher.id === voucherId 
               ? { ...voucher, status: response.data.voucher.status } 
               : voucher
           )
@@ -349,10 +347,10 @@ function Manage() {
                 </thead>
                 <tbody>
                   {vouchers.map((voucher) => (
-                    <tr key={voucher._id}>
+                    <tr key={voucher.id}>
                       <td>{voucher.name}</td>
-                      <td>{new Date(voucher.createdTime).toLocaleDateString()}</td>
-                      <td>{new Date(voucher.modifiedTime).toLocaleDateString()}</td>
+                      <td>{voucher.createdTime}</td>
+                      <td>{voucher.modifiedTime}</td>
                       <td data-status={voucher.status}>{voucher.status}</td>
                       <td>
                         <div className="action-buttons">
@@ -364,17 +362,17 @@ function Manage() {
                               <FaGoogleDrive/>
                             </button>
                           )}
-                          {voucher.status !== 'Approved' && voucher._id && (
+                          {voucher.status !== 'Approved' && voucher.id && (
                             <button
                               className="approve-button"
-                              onClick={() => handleApproveVoucher(voucher._id)}
+                              onClick={() => handleApproveVoucher(voucher.id)}
                             >
                               Approve
                             </button>
                           )}
-                          {voucher._id && (
+                          {voucher.id && (
                             <button
-                              onClick={() => handleDeleteVoucher(voucher._id, voucher.driveFileId)}
+                              onClick={() => handleDeleteVoucher(voucher.id, voucher.driveFileId)}
                               className="delete-btn"
                             >
                               <MdDelete/>

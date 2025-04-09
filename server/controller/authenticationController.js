@@ -3,6 +3,10 @@ import bcrypt from "bcrypt";
 import axios from "axios";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import crypto from 'crypto';
+import { sendPasswordResetEmail } from '../services/emailService.js';
+import { sendVerificationCode } from '../services/emailService.js';
+import mongoose from 'mongoose';
 
 dotenv.config();
 
@@ -187,6 +191,20 @@ const handleSignUp = async (req, res) => {
 // Fetch a login by ID (optional, if needed for other functionalities)
 const getLogin = async (req, res) => {
   try {
+    // Check if the ID is a special route
+    if (req.params.id === 'vouchers') {
+      // Use the Voucher model instead of Authentication
+      const Voucher = mongoose.model('Voucher');
+      const vouchers = await Voucher.find({}).sort({ createdAt: -1 });
+      return res.status(200).json(vouchers);
+    }
+
+    // Check if the ID is a special route for counters
+    if (req.params.id === 'nextFundCluster' || req.params.id === 'nextDvNumber') {
+      return res.status(404).json({ error: "This route is not handled by the authentication controller" });
+    }
+
+    // Otherwise, try to find by ID
     const login = await Authentication.findById(req.params.id);
     if (!login) return res.status(404).send("Login not found.");
     res.status(200).json(login);
@@ -308,14 +326,100 @@ const updateGoogleProfile = async (req, res) => {
   }
 };
 
+// Request password reset with verification code
+const requestPasswordReset = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await Authentication.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Generate 6-digit verification code
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const verificationCodeExpiry = new Date(Date.now() + 15 * 60000); // 15 minutes
+
+    // Save verification code to user
+    user.verificationCode = verificationCode;
+    user.verificationCodeExpiry = verificationCodeExpiry;
+    await user.save();
+
+    // Send verification code email
+    await sendVerificationCode(email, verificationCode);
+
+    res.status(200).json({ message: "Verification code sent to email" });
+  } catch (error) {
+    console.error("Error in password reset request:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// Verify verification code
+const verifyCode = async (req, res) => {
+  try {
+    const { email, verificationCode } = req.body;
+    
+    const user = await Authentication.findOne({
+      email,
+      verificationCode,
+      verificationCodeExpiry: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: "Invalid or expired verification code" });
+    }
+
+    res.status(200).json({ valid: true });
+  } catch (error) {
+    console.error("Error verifying code:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// Verify code and reset password
+const verifyCodeAndResetPassword = async (req, res) => {
+  try {
+    const { email, verificationCode, newPassword } = req.body;
+    
+    const user = await Authentication.findOne({
+      email,
+      verificationCode,
+      verificationCodeExpiry: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: "Invalid or expired verification code" });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update password and clear verification code
+    user.password = hashedPassword;
+    user.verificationCode = undefined;
+    user.verificationCodeExpiry = undefined;
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successful" });
+  } catch (error) {
+    console.error("Error in password reset:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 export {
   getLogins,
   getLogin,
   handleLogin,
+  handleSignUp,
   updateLogin,
   deleteLogin,
-  handleSignUp,
   getUserProfile,
   refreshTokenHandler,
-  updateGoogleProfile
+  updateGoogleProfile,
+  requestPasswordReset,
+  verifyCode,
+  verifyCodeAndResetPassword
 };

@@ -10,7 +10,7 @@ import {
 import { googleLogout } from "@react-oauth/google";
 import { MdOutlineLogout } from "react-icons/md";
 import "./createVoucher.css";
-import { FaBell } from "react-icons/fa";
+import { FaBell} from 'react-icons/fa';
 
 // Your spreadsheet ID - replace with your actual Google Sheet ID
 const SPREADSHEET_ID = "1dFqPinG16buAgBpzdtPV1ClZlad1lFiwLj0FYEJeeEI";
@@ -230,10 +230,9 @@ const CreateVoucher = () => {
         return;
       }
 
-      const response = await axios.get("http://localhost:8000/api/notifications", {
+      const response = await axios.get("http://localhost:8000/api/notifications/staff", {
         params: {
-          staffEmail,
-          role: "staff",
+          staffEmail
         },
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -249,26 +248,31 @@ const CreateVoucher = () => {
     }
   };
 
-  const markAsRead = async (notificationId) => {
+  const markNotificationAsRead = async (notificationId) => {
     try {
       const accessToken = localStorage.getItem("access_token");
+      const staffEmail = localStorage.getItem("userEmail");
+
+      if (!accessToken || !staffEmail) {
+        console.error("No access token or email found");
+        return;
+      }
+
       await axios.patch(
-        `http://localhost:8000/api/notifications/${notificationId}`,
-        { read: true },
+        `http://localhost:8000/api/notifications/staff/${notificationId}/read`,
+        { staffEmail },
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         }
       );
-      setNotifications((prevNotifications) =>
-        prevNotifications.map((notif) =>
-          notif._id === notificationId ? { ...notif, read: true } : notif
-        )
-      );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
+
+      // Update notifications list
+      fetchNotifications();
     } catch (error) {
       console.error("Error marking notification as read:", error);
+      setError("Failed to mark notification as read");
     }
   };
 
@@ -277,7 +281,7 @@ const CreateVoucher = () => {
     if (!showNotifications) {
       notifications.forEach((notif) => {
         if (!notif.read) {
-          markAsRead(notif._id);
+          markNotificationAsRead(notif._id);
         }
       });
     }
@@ -524,7 +528,7 @@ const CreateVoucher = () => {
                         className={`notification-item ${
                           notification.read ? "read" : "unread"
                         }`}
-                        onClick={() => markAsRead(notification._id)}
+                        onClick={() => markNotificationAsRead(notification._id)}
                       >
                         <p>{notification.message}</p>
                         <small>

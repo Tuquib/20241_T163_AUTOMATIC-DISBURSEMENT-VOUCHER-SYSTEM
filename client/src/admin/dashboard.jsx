@@ -19,7 +19,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { FaBell } from 'react-icons/fa';
+import { FaBell, FaFileInvoiceDollar } from 'react-icons/fa';
 
 const clientId =
   "1083555345988-qc172fbg8ss4a7ptr55el7enke7g3s4v.apps.googleusercontent.com";
@@ -78,7 +78,7 @@ function Dashboard() {
   const [voucherCount, setVoucherCount] = useState(0);
   const [graphData, setGraphData] = useState([]);
   const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
@@ -99,13 +99,23 @@ function Dashboard() {
     // Fetch task and voucher data for the graph
     const fetchData = async () => {
       try {
+        const accessToken = localStorage.getItem('access_token');
+        if (!accessToken) {
+          console.error('No access token found');
+          return;
+        }
+
         // Fetch tasks
-        const taskResponse = await axios.get("http://localhost:8000/api/task");
+        const taskResponse = await axios.get("http://localhost:8000/api/task", {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
         const tasks = taskResponse.data;
         setTaskCount(tasks.length);
 
         // Fetch vouchers
-        const voucherResponse = await axios.get("http://localhost:8000/api/vouchers");
+        const voucherResponse = await axios.get("http://localhost:8000/api/vouchers", {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
         const vouchers = voucherResponse.data;
         setVoucherCount(vouchers.length);
 
@@ -149,74 +159,92 @@ function Dashboard() {
   }, []);
 
   // Fetch notifications
-const fetchNotifications = async () => {
-  try {
+  const fetchNotifications = async () => {
+    try {
       const accessToken = localStorage.getItem('access_token');
-
-      if (!accessToken) {
-          console.error('No access token found');
-          return;
-      }
-
-      const response = await axios.get('http://localhost:8000/api/admin/notification', {
-          headers: {
-              'Authorization': `Bearer ${accessToken}`
-          }
+      const response = await axios.get('http://localhost:8000/api/admin/notifications', {
+        headers: { Authorization: `Bearer ${accessToken}` }
       });
-
+      
       setNotifications(response.data);
-      // Count unread notifications
-      const unread = response.data.filter(notif => !notif.read).length;
-      setUnreadCount(unread);
-  } catch (error) {
+      // Update unread count
+      const unreadCount = response.data.filter(notif => !notif.read).length;
+      setUnreadNotifications(unreadCount);
+    } catch (error) {
       console.error('Error fetching notifications:', error);
-      setError('Failed to fetch notifications');
-  }
-};
+    }
+  };
 
- // Mark notification as read
- const markAsRead = async (notificationId) => {
-  try {
-    const accessToken = localStorage.getItem('access_token');
-    await axios.patch(
-      `http://localhost:8000/api/admin/notification/${notificationId}`,
-      { read: true },
-      {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`
-        }
+  // Mark notification as read
+  const markNotificationAsRead = async (notificationId) => {
+    try {
+      const accessToken = localStorage.getItem('access_token');
+      const userEmail = localStorage.getItem('userEmail');
+
+      if (!accessToken || !userEmail) {
+        console.error('No access token or email found');
+        return;
       }
-    );
-    // Update local state
-    setNotifications(prevNotifications =>
-      prevNotifications.map(notif =>
-        notif._id === notificationId ? { ...notif, read: true } : notif
-      )
-    );
-    setUnreadCount(prev => Math.max(0, prev - 1));
-  } catch (error) {
-    console.error('Error marking notification as read:', error);
-  }
-};
 
-const toggleNotifications = () => {
-  setShowNotifications(!showNotifications);
-  if (!showNotifications) {
-      // Mark all as read when opening the panel
-      notifications.forEach(notif => {
-          if (!notif.read) {
-              markAsRead(notif._id);
-          }
-      });
-  }
-};
+      await axios.patch(
+        `http://localhost:8000/api/notifications/admin/${notificationId}/read`,
+        { adminEmail: userEmail },
+        {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        }
+      );
+      
+      // Update local state
+      setNotifications(prevNotifications =>
+        prevNotifications.map(notif =>
+          notif._id === notificationId ? { ...notif, read: true } : notif
+        )
+      );
+      setUnreadNotifications(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
 
-useEffect(() => {
-  fetchNotifications(); // Initial fetch
-  const interval = setInterval(fetchNotifications, 30000); // Poll every 30 seconds
-  return () => clearInterval(interval); // Cleanup on component unmount
-}, []);
+  // Notification dropdown content
+  const renderNotificationContent = () => (
+    <div className="notification-dropdown">
+      <div className="notification-header">
+        <h3>Notifications</h3>
+        <span>{unreadNotifications} unread</span>
+      </div>
+      <div className="notification-list">
+        {notifications.length === 0 ? (
+          <div className="no-notifications">No notifications</div>
+        ) : (
+          notifications.map((notification) => (
+            <div
+              key={notification._id}
+              className={`notification-item ${!notification.read ? 'unread' : ''}`}
+              onClick={() => markNotificationAsRead(notification._id)}
+            >
+              <div className="notification-icon">
+                <FaFileInvoiceDollar className="voucher-icon" />
+              </div>
+              <div className="notification-content">
+                <p>{notification.message}</p>
+                <small>
+                  From: {notification.sourceStaffEmail}<br/>
+                  {new Date(notification.createdAt).toLocaleString()}
+                </small>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
 
+  useEffect(() => {
+    fetchNotifications(); // Initial fetch
+    const interval = setInterval(fetchNotifications, 30000); // Poll every 30 seconds
+    return () => clearInterval(interval); // Cleanup on component unmount
+  }, []);
 
   return (
     <div className="dashboard">
@@ -236,33 +264,13 @@ useEffect(() => {
             )}
           </button>
          <div className="notification-container">
-            <button className="notification-button" onClick={toggleNotifications}>
+            <button className="notification-button" onClick={() => setShowNotifications(!showNotifications)}>
               <FaBell />
-              {unreadCount > 0 && (
-                <span className="notification-badge">{unreadCount}</span>
+              {unreadNotifications > 0 && (
+                <span className="notification-badge">{unreadNotifications}</span>
               )}
             </button>
-            {showNotifications && (
-              <div className="notification-panel">
-                <h3>Notifications</h3>
-                {notifications.length === 0 ? (
-                  <p>No notifications</p>
-                ) : (
-                  <ul className="notification-list">
-                    {notifications.map(notification => (
-                      <li
-                        key={notification._id}
-                        className={`notification-item ${notification.read ? 'read' : 'unread'}`}
-                        onClick={() => markAsRead(notification._id)}
-                      >
-                        <p>{notification.message}</p>
-                        <small>{new Date(notification.createdAt).toLocaleString()}</small>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
+            {showNotifications && renderNotificationContent()}
           </div>
         </nav>
       </header>

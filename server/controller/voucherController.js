@@ -3,18 +3,33 @@ import Notification from "../model/notificationDB.js";
 import Counter from "../model/counter.js";
 import Staff from "../model/staffDB.js";
 import { googleDriveService } from "../services/googleDriveService.js";
+import axios from "axios";
 
 // Get All Vouchers (from MongoDB)
 const getVouchers = async (req, res) => {
   try {
-    const { staffEmail, isAdmin } = req.query;
+    const { staffEmail } = req.query;
+    const token = req.headers.authorization?.split(" ")[1];
 
-    // If not admin and staffEmail is provided, filter by it
-    const query = !isAdmin && staffEmail ? { staffEmail } : {};
+    if (!token) {
+      return res.status(401).json({ message: "No token provided" });
+    }
+
+    // Build query based on role and staffEmail
+    let query = {};
+    
+    // For staff users, always filter by their email
+    if (staffEmail) {
+      query = { staffEmail: staffEmail };
+    }
+
+    console.log("Query:", query, "Staff Email:", staffEmail);
 
     const vouchers = await Voucher.find(query)
       .sort({ createdAt: -1 }) // Sort by newest first
       .select("-__v"); // Exclude version key
+
+    console.log("Found vouchers:", vouchers.length);
 
     const formattedVouchers = vouchers.map((voucher) => ({
       id: voucher._id,
@@ -26,8 +41,8 @@ const getVouchers = async (req, res) => {
       dvNumber: voucher.dvNumber,
       fundCluster: voucher.fundCluster,
       driveFileId: voucher.driveFileId,
-      staffEmail: voucher.staffEmail, // Add staffEmail to see who created the voucher
-      staffName: voucher.staffName, // Add staffName to see who created the voucher
+      staffEmail: voucher.staffEmail,
+      staffName: voucher.staffName,
     }));
 
     res.status(200).json(formattedVouchers);
@@ -62,7 +77,7 @@ const getNextDvNumber = async (req, res) => {
     );
     res.status(200).json({ dvNumber: counter.sequenceValue });
   } catch (error) {
-    console.error("Error retrieving next DV number:", error.message);
+    console.error("Error retrieving next DV number:", error);
     res.status(500).send("Error retrieving next DV number");
   }
 };
@@ -76,7 +91,7 @@ const getNextFundCluster = async (req, res) => {
     );
     res.status(200).json({ fundCluster: counter.sequenceValue });
   } catch (error) {
-    console.error("Error retrieving next fund cluster:", error.message);
+    console.error("Error retrieving next fund cluster:", error);
     res.status(500).send("Error retrieving next fund cluster");
   }
 };
@@ -85,15 +100,30 @@ const getNextFundCluster = async (req, res) => {
 const getDriveVouchers = async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
+    const { staffEmail, isAdmin } = req.query;
+
     if (!token) {
       return res.status(401).json({ message: "No token provided" });
     }
 
-    await googleDriveService.initializeWithToken(token, req.query.staffEmail);
-    const vouchers = await googleDriveService.listVouchers(
-      req.query.staffEmail
-    );
-    res.status(200).json(vouchers);
+    // For staff users, must have staffEmail
+    if (!isAdmin && !staffEmail) {
+      return res.status(400).json({ message: "Staff email is required" });
+    }
+
+    console.log("Getting drive vouchers for:", { staffEmail, isAdmin });
+
+    await googleDriveService.initializeWithToken(token, staffEmail);
+    const vouchers = await googleDriveService.listVouchers(staffEmail);
+
+    // For staff users, only return their vouchers
+    const filteredVouchers = !isAdmin && staffEmail 
+      ? vouchers.filter(v => v.staffEmail === staffEmail)
+      : vouchers;
+
+    console.log("Found drive vouchers:", filteredVouchers.length);
+
+    res.status(200).json(filteredVouchers);
   } catch (error) {
     console.error("Drive API Error:", error);
     res.status(500).json({

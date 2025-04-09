@@ -6,6 +6,7 @@ import {
   getAdmins, 
   updateAdmin, 
   deleteAdmin,
+  getAdminNotifications
 } from "../controller/adminController.js";
 
 const adminRoutes = express.Router();
@@ -21,5 +22,8 @@ adminRoutes.post("/admin/initialize-drive", initializeAdminDrive);
 adminRoutes.get("/admin", getAdmins);
 adminRoutes.patch("/admin/:id", updateAdmin);
 adminRoutes.delete("/admin/:id", deleteAdmin);
+
+// Admin notifications
+adminRoutes.get("/admin/notifications", getAdminNotifications);
 
 export default adminRoutes;

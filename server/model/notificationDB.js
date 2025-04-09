@@ -12,13 +12,14 @@ const notificationSchema = new mongoose.Schema({
     },
     voucherId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Voucher'
+        ref: 'Voucher',
+        required: false
     },
-    staffName: {
+    staffEmail: {
         type: String,
         required: true
     },
-    staffEmail: {
+    staffName: {
         type: String,
         required: true
     },
@@ -32,7 +33,8 @@ const notificationSchema = new mongoose.Schema({
     }
 });
 
-// Index for faster queries
+// Compound index for efficient querying
 notificationSchema.index({ staffEmail: 1, type: 1, createdAt: -1 });
 
-export default mongoose.model('Notification', notificationSchema);
+const Notification = mongoose.model('Notification', notificationSchema);
+export default Notification;

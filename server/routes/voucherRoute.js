@@ -2,29 +2,28 @@ import express from "express";
 import {
   getVouchers,
   getVoucher,
+  postVoucher,
+  deleteVoucher,
+  updateVoucher,
   getNextDvNumber,
   getNextFundCluster,
-  postVoucher,
-  updateVoucher,
-  deleteVoucher,
-  getDriveVouchers,
   createStaffFolder,
   updateVoucherStatus,
 } from "../controller/voucherController.js";
 
 const router = express.Router();
 
-// Get all vouchers (combined from Drive and DB)
-router.get("/vouchers", getVouchers);
-
-// Get single voucher
-router.get("/vouchers/:id", getVoucher);
-
 // Get next DV number
 router.get("/nextDvNumber", getNextDvNumber);
 
 // Get next fund cluster
 router.get("/nextFundCluster", getNextFundCluster);
+
+// Get all vouchers (combined from Drive and DB)
+router.get("/vouchers", getVouchers);
+
+// Get single voucher
+router.get("/vouchers/:id", getVoucher);
 
 // Post a new voucher
 router.post("/vouchers", postVoucher);

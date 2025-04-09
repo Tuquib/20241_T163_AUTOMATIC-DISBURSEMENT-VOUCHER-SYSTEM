@@ -477,11 +477,12 @@ export const exportToPDF = async (
 
     // Get or create staff folder through server
     const createFolderResponse = await fetch(
-      "/api/vouchers/create-staff-folder",
+      "http://localhost:8000/api/vouchers/create-staff-folder",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
           accessToken: token,

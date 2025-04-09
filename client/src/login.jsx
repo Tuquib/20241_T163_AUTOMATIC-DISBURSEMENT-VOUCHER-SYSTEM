@@ -23,6 +23,13 @@ function Login() {
   const [password, setPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [recaptchaValue, setRecaptchaValue] = useState("");
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [showNewPasswordModal, setShowNewPasswordModal] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const recaptchaRef = useRef(null);
   const navigate = useNavigate();
 
@@ -58,8 +65,6 @@ function Login() {
         localStorage.setItem("userPicture", userInfo.data.picture);
         localStorage.setItem("userInfo", JSON.stringify(userInfo.data));
 
-
-
         // Update user's profile picture in the database
         try {
           await axios.post("http://localhost:8000/api/update-google-profile", {
@@ -82,6 +87,7 @@ function Login() {
           );
 
           if (staffResponse.data) {
+            localStorage.setItem("isAdmin", "false");
             console.log(
               "Staff login successful! Redirecting to staff dashboard..."
             );
@@ -110,6 +116,7 @@ function Login() {
               // Continue with login even if drive initialization fails
             }
 
+            localStorage.setItem("isAdmin", "true");
             console.log(
               "Admin login successful! Redirecting to admin dashboard..."
             );
@@ -139,7 +146,7 @@ function Login() {
       alert("Google login failed. Please try again.");
     },
     scope: GOOGLE_SCOPES,
-    flow: "implicit",
+    flow: "implicit"
   });
 
   const handleRecaptchaChange = (value) => {
@@ -168,7 +175,9 @@ function Login() {
         localStorage.setItem("userEmail", response.data.user.email);
         localStorage.setItem("userName", response.data.user.name);
         localStorage.setItem("userRole", response.data.user.role);
+        localStorage.setItem("isAdmin", String(response.data.user.role === "admin"));
         localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("access_token", response.data.token);
 
         // Navigate based on role
         if (response.data.user.role === "admin") {
@@ -207,6 +216,79 @@ function Login() {
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
+  };
+
+  const handleForgotPassword = async () => {
+    if (!forgotPasswordEmail) {
+      alert("Please enter your email address first");
+      return;
+    }
+
+    try {
+      await axios.post("http://localhost:8000/api/forgot-password", {
+        email: forgotPasswordEmail
+      });
+      setShowForgotPassword(false);
+      setShowVerificationModal(true);
+      alert("Verification code has been sent to your email.");
+    } catch (error) {
+      console.error("Error requesting verification code:", error);
+      alert("An error occurred. Please try again.");
+    }
+  };
+
+  const handleVerifyCode = async (e) => {
+    e.preventDefault();
+    
+    if (!verificationCode) {
+      alert("Please enter the verification code");
+      return;
+    }
+
+    try {
+      const response = await axios.post("http://localhost:8000/api/verify-code", {
+        email: forgotPasswordEmail,
+        verificationCode
+      });
+      if (response.data.valid) {
+        setShowVerificationModal(false);
+        setShowNewPasswordModal(true);
+      }
+    } catch (error) {
+      console.error("Error verifying code:", error);
+      alert("Invalid verification code. Please try again.");
+    }
+  };
+
+  const handlePasswordReset = async (e) => {
+    e.preventDefault();
+
+    if (!newPassword || !confirmPassword) {
+      alert("Please enter and confirm your new password");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    try {
+      await axios.post("http://localhost:8000/api/verify-and-reset", {
+        email: forgotPasswordEmail,
+        verificationCode,
+        newPassword
+      });
+      alert("Password reset successful! Please login with your new password.");
+      setShowNewPasswordModal(false);
+      setVerificationCode("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setForgotPasswordEmail("");
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      alert(error.response?.data?.error || "An error occurred. Please try again.");
+    }
   };
 
   return (
@@ -253,6 +335,9 @@ function Login() {
             >
               {passwordVisible ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
             </div>
+            <div className="forgot-password">
+              <span onClick={() => setShowForgotPassword(true)}>Forgot Password?</span>
+            </div>
             <ReCAPTCHA
               ref={recaptchaRef}
               sitekey={RECAPTCHA_SITE_KEY}
@@ -264,6 +349,104 @@ function Login() {
               Sign in with Google
             </button>
           </form>
+          {showForgotPassword && (
+            <div className="forgot-password-modal">
+              <div className="modal-content">
+                <h3>Reset Password</h3>
+                <div className="form-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={forgotPasswordEmail}
+                    onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <button onClick={handleForgotPassword}>Send Verification Code</button>
+                <button
+                  className="close-modal"
+                  onClick={() => {
+                    setShowForgotPassword(false);
+                    setForgotPasswordEmail("");
+                  }}
+                >
+                  Back to Login
+                </button>
+              </div>
+            </div>
+          )}
+
+          {showVerificationModal && (
+            <div className="forgot-password-modal">
+              <div className="modal-content">
+                <h3>Enter Verification Code</h3>
+                <form onSubmit={handleVerifyCode}>
+                  <div className="form-group">
+                    <label>Verification Code</label>
+                    <input
+                      type="text"
+                      placeholder="Enter verification code"
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <button type="submit">Verify Code</button>
+                  <button
+                    className="close-modal"
+                    onClick={() => {
+                      setShowVerificationModal(false);
+                      setVerificationCode("");
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {showNewPasswordModal && (
+            <div className="forgot-password-modal">
+              <div className="modal-content">
+                <h3>Set New Password</h3>
+                <form onSubmit={handlePasswordReset}>
+                  <div className="form-group">
+                    <label>New Password</label>
+                    <input
+                      type="password"
+                      placeholder="Enter new password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Confirm Password</label>
+                    <input
+                      type="password"
+                      placeholder="Confirm new password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <button type="submit">Reset Password</button>
+                  <button
+                    className="close-modal"
+                    onClick={() => {
+                      setShowNewPasswordModal(false);
+                      setNewPassword("");
+                      setConfirmPassword("");
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </div>

@@ -19,8 +19,24 @@ const authenticationSchema = new mongoose.Schema({
     enum: ["admin", "staff"],
     required: true,
   },
-  picture:  {
+  picture: {
     type: String,
+    required: false,
+  },
+  verificationCode: {
+    type: String,
+    required: false,
+  },
+  verificationCodeExpiry: {
+    type: Date,
+    required: false,
+  },
+  resetToken: {
+    type: String,
+    required: false,
+  },
+  resetTokenExpiry: {
+    type: Date,
     required: false,
   }
 });

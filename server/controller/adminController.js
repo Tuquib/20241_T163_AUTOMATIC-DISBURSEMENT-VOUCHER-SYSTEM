@@ -1,6 +1,7 @@
 import { googleDriveService } from '../services/googleDriveService.js';
 import Admin from '../model/adminDB.js';
 import bcrypt from 'bcrypt';
+import Notification from '../model/notificationDB.js'; // Added import statement for Notification model
 
 // Admin login
 const adminLogin = async (req, res) => {
@@ -115,11 +116,27 @@ const deleteAdmin = async (req, res) => {
   }
 };
 
+// Get admin notifications
+const getAdminNotifications = async (req, res) => {
+  try {
+    const notifications = await Notification.find({
+      type: 'new_voucher'
+    })
+    .sort({ createdAt: -1 })
+    .limit(50);
+    
+    res.json(notifications);
+  } catch (error) {
+    console.error('Error fetching admin notifications:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
 
 export {
   adminLogin,
   initializeAdminDrive,
   getAdmins,
   updateAdmin,
-  deleteAdmin
+  deleteAdmin,
+  getAdminNotifications
 };

@@ -4,8 +4,11 @@ import { googleLogout } from "@react-oauth/google";
 import { MdOutlineLogout, MdDelete } from "react-icons/md";
 import { FaGoogleDrive } from "react-icons/fa";
 import axios from "axios";
+import "./shared.css";
 import "./staffDashboard.css";
 import { FaBell} from 'react-icons/fa';
+import { FaCheckCircle } from 'react-icons/fa';   
+import { FaClipboardCheck } from 'react-icons/fa';
 
 function Dashboard() {
   const [loading, setLoading] = useState(true);
@@ -37,27 +40,41 @@ function Dashboard() {
         setLoading(true);
         setError(null);
         const staffEmail = localStorage.getItem("userEmail");
+        const accessToken = localStorage.getItem("access_token");
+
+        if (!staffEmail || !accessToken) {
+          setError("Please log in again");
+          return;
+        }
+
+        // Check if user is admin based on email
+        const isAdmin = staffEmail === "2201102322@student.buksu.edu.ph"; // Add more admin emails as needed
 
         const response = await axios.get("http://localhost:8000/api/vouchers", {
           params: {
-            staffEmail: staffEmail,
+            staffEmail: staffEmail
           },
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
         });
 
         const formattedVouchers = response.data.map((voucher) => ({
           id: voucher.id,
-          name: voucher.name,
+          name: voucher.name || `DV_${voucher.dvNumber}`,
           createdTime: new Date(voucher.createdTime).toLocaleDateString(),
           modifiedTime: new Date(voucher.modifiedTime).toLocaleDateString(),
           status: voucher.status,
           webViewLink: voucher.webViewLink,
           driveFileId: voucher.driveFileId,
+          dvNumber: voucher.dvNumber,
+          fundCluster: voucher.fundCluster
         }));
 
         setVouchers(formattedVouchers);
-      } catch (err) {
-        console.error("Error fetching vouchers:", err);
-        setError("Failed to load vouchers. Please try again later.");
+      } catch (error) {
+        console.error("Error fetching vouchers:", error);
+        setError("Failed to fetch vouchers. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -150,48 +167,55 @@ function Dashboard() {
    // Fetch notifications
    const fetchNotifications = async () => {
     try {
-      const accessToken = localStorage.getItem('access_token');
-      const staffEmail = localStorage.getItem('userEmail');
-
-      if (!accessToken || !staffEmail) {
-        console.error('No access token or email found');
+      const accessToken = localStorage.getItem("access_token");
+      const staffEmail = localStorage.getItem("userEmail");
+      
+      if (!staffEmail || !accessToken) {
+        console.error("No access token or email found");
         return;
       }
 
-      const response = await axios.get('http://localhost:8000/api/notifications', {
-        params: { 
-          staffEmail,
-          role: 'staff'  // Specify role as staff
-        },
-        headers: {
-          'Authorization': `Bearer ${accessToken}`
+      const response = await axios.get(
+        "http://localhost:8000/api/notifications/staff",
+        {
+          params: { staffEmail },
+          headers: { 
+            Authorization: `Bearer ${accessToken}` 
+          }
         }
-      });
+      );
 
-      setNotifications(response.data);
-      // Count unread notifications
-      const unread = response.data.filter(notif => !notif.read).length;
-      setUnreadCount(unread);
+      if (response.data && Array.isArray(response.data)) {
+        setNotifications(response.data);
+        const unread = response.data.filter(notif => !notif.read).length;
+        setUnreadCount(unread);
+      }
     } catch (error) {
-      console.error('Error fetching notifications:', error);
-      setError('Failed to fetch notifications');
+      console.error("Error fetching notifications:", error);
     }
   };
 
   // Mark notification as read
   const markAsRead = async (notificationId) => {
     try {
-      const accessToken = localStorage.getItem('access_token');
+      const accessToken = localStorage.getItem("access_token");
+      const staffEmail = localStorage.getItem("userEmail");
+      
+      if (!accessToken || !staffEmail) {
+        console.error("No access token or email found");
+        return;
+      }
+
       await axios.patch(
-        `http://localhost:8000/api/notifications/${notificationId}`,
-        { read: true },
+        `http://localhost:8000/api/notifications/staff/${notificationId}/read`,
+        { staffEmail },
         {
           headers: {
-            'Authorization': `Bearer ${accessToken}`
+            Authorization: `Bearer ${accessToken}`
           }
         }
       );
-      // Update local state
+
       setNotifications(prevNotifications =>
         prevNotifications.map(notif =>
           notif._id === notificationId ? { ...notif, read: true } : notif
@@ -199,7 +223,7 @@ function Dashboard() {
       );
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      console.error("Error marking notification as read:", error);
     }
   };
 
@@ -250,24 +274,36 @@ function Dashboard() {
               )}
             </button>
             {showNotifications && (
-              <div className="notification-panel">
-                <h3>Notifications</h3>
-                {notifications.length === 0 ? (
-                  <p>No notifications</p>
-                ) : (
-                  <ul className="notification-list">
-                    {notifications.map(notification => (
-                      <li
+              <div className="notification-dropdown">
+                <div className="notification-header">
+                  <h3>Notifications</h3>
+                  <span>{unreadCount} unread</span>
+                </div>
+                <div className="notification-list">
+                  {notifications.length === 0 ? (
+                    <div className="no-notifications">No notifications</div>
+                  ) : (
+                    notifications.map((notification) => (
+                      <div
                         key={notification._id}
-                        className={`notification-item ${notification.read ? 'read' : 'unread'}`}
+                        className={`notification-item ${!notification.read ? 'unread' : ''}`}
                         onClick={() => markAsRead(notification._id)}
                       >
-                        <p>{notification.message}</p>
-                        <small>{new Date(notification.createdAt).toLocaleString()}</small>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                        <div className="notification-icon">
+                          {notification.type === 'voucher_approved' ? (
+                            <FaCheckCircle className="approved-icon" />
+                          ) : (
+                            <FaClipboardCheck className="task-icon" />
+                          )}
+                        </div>
+                        <div className="notification-content">
+                          <p>{notification.message}</p>
+                          <small>{new Date(notification.createdAt).toLocaleString()}</small>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             )}
           </div>
