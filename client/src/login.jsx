@@ -33,6 +33,14 @@ function Login() {
   const recaptchaRef = useRef(null);
   const navigate = useNavigate();
 
+  const handleLoginClick = () => {
+    navigate("/login");
+  };
+
+  const handleAdminLoginClick = () => {
+    navigate("/adminLogin");
+  };
+
   const login = useGoogleLogin({
     onSuccess: async (response) => {
       try {
@@ -301,7 +309,8 @@ function Login() {
           <span className="sub2-text">Automatic Disbursement Voucher</span>
         </div>
         <nav className="nav-links">
-          <button className="login-btn">Login</button>
+          <button className="login-btn" onClick={handleAdminLoginClick}>Login as Admin</button>
+          <button className="login-btn" onClick={handleLoginClick}>Login as Staff</button>
         </nav>
       </header>
       <main className="cont">

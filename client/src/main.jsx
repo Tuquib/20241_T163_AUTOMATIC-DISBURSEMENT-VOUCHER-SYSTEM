@@ -5,6 +5,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import "./index.css";
 import App from "./frontpage.jsx";
 import Login from "./login.jsx";
+import AdminLogin from "./adminlogin.jsx"
 import Staff from "./admin/addStaff.jsx";
 import Task from "./admin/addTask.jsx";
 import Manage from "./admin/manage.jsx";
@@ -23,6 +24,7 @@ createRoot(document.getElementById("root")).render(
         <Routes>
           <Route path="/" element={<App />} />
           <Route path="/login" element={<Login />} />
+          <Route path= "/adminLogin" element={<AdminLogin/>}/>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/manage" element={<Manage />} />
           <Route path="/addStaff" element={<Staff />} />

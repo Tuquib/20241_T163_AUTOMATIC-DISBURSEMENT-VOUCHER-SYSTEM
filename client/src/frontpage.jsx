@@ -9,6 +9,10 @@ function Frontpage() {
     navigate("/login");
   };
 
+  const handleAdminLoginClick = () => {
+    navigate("/adminLogin");
+  };
+
   return (
     <div className="App">
       <header className="navbar">
@@ -19,8 +23,10 @@ function Frontpage() {
           <span className="sub2-text">Automatic Disbursement Voucher</span>
         </div>
         <nav className="nav-links">
+          <button className="login-btn" onClick={handleAdminLoginClick}>
+            Login as Admin          </button>
           <button className="login-btn" onClick={handleLoginClick}>
-            Login
+            Login as Staff
           </button>
         </nav>
       </header>
