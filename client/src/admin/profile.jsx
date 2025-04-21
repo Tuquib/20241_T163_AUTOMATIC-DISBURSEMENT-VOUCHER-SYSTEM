@@ -15,6 +15,12 @@ function Profile() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    email: '',
+    picture: ''
+  });
   const [userProfile, setUserProfile] = useState({
     name: '',
     email: '',
@@ -42,7 +48,69 @@ function Profile() {
       role: userRole || 'admin',
       picture: userPicture || userInfo.picture || null
     });
+
+    setEditForm({
+      name: userName || userInfo.name || 'User',
+      email: userEmail,
+      picture: userPicture || userInfo.picture || null
+    });
   }, [navigate]);
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditForm({
+      name: userProfile.name,
+      email: userProfile.email,
+      picture: userProfile.picture
+    });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const accessToken = localStorage.getItem('access_token');
+      const response = await axios.put(
+        `http://localhost:8000/api/staff/update/${userProfile.email}`,
+        editForm,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        }
+      );
+
+      if (response.data) {
+        // Update local storage
+        localStorage.setItem('userName', response.data.name);
+        localStorage.setItem('userPicture', response.data.picture);
+        localStorage.setItem('userInfo', JSON.stringify(response.data));
+
+        // Update state
+        setUserProfile(prev => ({
+          ...prev,
+          name: response.data.name,
+          picture: response.data.picture
+        }));
+
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Failed to update profile. Please try again.');
+    }
+  };
 
   const handleManageClick = () => {
     navigate("/manage"); // Navigate to the Manage route when button is clicked
@@ -209,11 +277,47 @@ function Profile() {
                   <div className="profile-placeholder">👤</div>
                 )}
               </div>
-              <div className="profile-info">
-                <h2>{userProfile.name}</h2>
-                <p className="role">{userProfile.role}</p>
-                <p className="email">{userProfile.email}</p>
-              </div>
+              {!isEditing ? (
+                <div className="profile-info">
+                  <h2>{userProfile.name}</h2>
+                  <p className="role">{userProfile.role}</p>
+                  <p className="email">{userProfile.email}</p>
+                  <button className="edit-profile-btn" onClick={handleEditClick}>
+                    Edit Profile
+                  </button>
+                </div>
+              ) : (
+                <div className="profile-edit-form">
+                  <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                      <label>Name:</label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={editForm.name}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Picture URL:</label>
+                      <input
+                        type="url"
+                        name="picture"
+                        value={editForm.picture || ''}
+                        onChange={handleInputChange}
+                        placeholder="Enter image URL"
+                      />
+                    </div>
+                    <div className="form-buttons">
+                      <button type="submit" className="save-btn">Save Changes</button>
+                      <button type="button" className="cancel-btn" onClick={handleCancelEdit}>
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
             </div>
           </div>
         </main>

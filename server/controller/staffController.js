@@ -133,4 +133,39 @@ const deleteStaff = async (req, res) => {
   }
 };
 
-export { getStaffs, getStaff, postStaff, updateStaff, deleteStaff, getStaffByEmail };
+//Update Staff by Email
+const updateStaffByEmail = async (req, res) => {
+  try {
+    const { email } = req.params;
+    const updates = req.body;
+
+    // Find and update the staff member
+    const updatedStaff = await Staff.findOneAndUpdate(
+      { email: email },
+      updates,
+      { new: true }
+    );
+
+    if (!updatedStaff) {
+      return res.status(404).json({ message: "Staff not found" });
+    }
+
+    // Also update the authentication record if needed
+    await Authentication.findOneAndUpdate(
+      { email: email },
+      {
+        $set: {
+          name: updates.name,
+          picture: updates.picture
+        }
+      }
+    );
+
+    res.status(200).json(updatedStaff);
+  } catch (error) {
+    console.error("Error updating staff:", error);
+    res.status(400).json({ message: "Error updating staff", error: error.message });
+  }
+};
+
+export { getStaffs, getStaff, postStaff, updateStaff, deleteStaff, getStaffByEmail, updateStaffByEmail };

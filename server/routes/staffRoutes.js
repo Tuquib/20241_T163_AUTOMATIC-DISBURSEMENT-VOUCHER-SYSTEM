@@ -5,7 +5,8 @@ import {
   postStaff,
   updateStaff,
   deleteStaff,
-  getStaffByEmail
+  getStaffByEmail,
+  updateStaffByEmail
 } from "../controller/staffController.js";
 
 const router = express.Router();
@@ -24,6 +25,9 @@ router.post("/staff", postStaff);
 
 // Route to update an existing staff member by ID
 router.patch("/staff/:id", updateStaff);
+
+// Route to update an existing staff member by email
+router.put("/staff/update/:email", updateStaffByEmail);
 
 // Route to delete a staff member by ID
 router.delete("/staff/:id", deleteStaff);

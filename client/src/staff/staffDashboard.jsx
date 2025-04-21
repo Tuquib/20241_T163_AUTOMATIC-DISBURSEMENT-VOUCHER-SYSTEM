@@ -18,6 +18,43 @@ import "./staffDashboard.css";
 import { FaBell} from 'react-icons/fa';
 import { FaCheckCircle } from 'react-icons/fa';
 import { FaClipboardCheck } from 'react-icons/fa';
+import { FaUserCircle } from 'react-icons/fa';
+
+// Profile Image Component
+const ProfileImage = ({ imageUrl }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    // Reset states when URL changes
+    setImageLoaded(false);
+    setImageError(false);
+  }, [imageUrl]);
+
+  if (!imageUrl || imageError) {
+    return <FaUserCircle size={40} color="#666" />;
+  }
+
+  return (
+    <div style={{ width: '40px', height: '40px', position: 'relative' }}>
+      <img
+        src={imageUrl}
+        alt="Profile"
+        style={{
+          width: '100%',
+          height: '100%',
+          borderRadius: '50%',
+          display: imageLoaded ? 'block' : 'none'
+        }}
+        onLoad={() => setImageLoaded(true)}
+        onError={() => setImageError(true)}
+      />
+      {!imageLoaded && !imageError && (
+        <FaUserCircle size={40} color="#666" style={{ position: 'absolute', top: 0, left: 0 }} />
+      )}
+    </div>
+  );
+};
 
 function Dashboard() {
   const [loading, setLoading] = useState(true);
@@ -35,6 +72,11 @@ function Dashboard() {
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const navigate = useNavigate();
   const accessToken = localStorage.getItem("access_token");
+  const [userProfile, setUserProfile] = useState({
+    picture: '',
+    name: '',
+    email: ''
+  });
 
   const handleCreateVoucher = () => {
     const staffEmail = localStorage.getItem("userEmail");
@@ -261,24 +303,70 @@ function Dashboard() {
     }
   };
 
-  const [userProfile, setUserProfile] = useState({
-    picture: "",
-  });
-
   useEffect(() => {
-    const userEmail = localStorage.getItem("userEmail");
-    const userPicture = localStorage.getItem("userPicture");
-    const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+    const loadUserProfile = async () => {
+      try {
+        // Get user info from localStorage
+        const userEmail = localStorage.getItem('userEmail');
+        const userPicture = localStorage.getItem('userPicture');
+        const userName = localStorage.getItem('userName');
+        const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
 
-    if (!userEmail) {
-      console.error("No user information found");
-      navigate("/");
-      return;
-    }
+        if (!userEmail) {
+          console.error('No user information found');
+          navigate('/');
+          return;
+        }
 
-    setUserProfile({
-      picture: userPicture || userInfo.picture || null,
-    });
+        // Debug logs
+        console.log('Loading profile data:');
+        console.log('Email:', userEmail);
+        console.log('Name:', userName);
+        console.log('Picture from localStorage:', userPicture);
+        console.log('UserInfo:', userInfo);
+
+        // Always try to get the latest profile data from the database
+        try {
+          console.log('Fetching profile from database for email:', userEmail);
+          const response = await axios.get(`http://localhost:8000/api/staff/email/${userEmail}`);
+          console.log('Database response:', response.data);
+          
+          if (response.data && response.data.picture) {
+            console.log('Got picture from database:', response.data.picture);
+            localStorage.setItem('userPicture', response.data.picture);
+            localStorage.setItem('userInfo', JSON.stringify({
+              email: response.data.email,
+              name: response.data.name,
+              picture: response.data.picture
+            }));
+            
+            setUserProfile({
+              picture: response.data.picture,
+              name: response.data.name || userName,
+              email: response.data.email || userEmail
+            });
+          } else {
+            console.log('No picture found in database response');
+            setUserProfile({
+              picture: userPicture || userInfo.picture || '',
+              name: userName || userInfo.name || '',
+              email: userEmail || userInfo.email || ''
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching profile from database:', error);
+          setUserProfile({
+            picture: userPicture || userInfo.picture || '',
+            name: userName || userInfo.name || '',
+            email: userEmail || userInfo.email || ''
+          });
+        }
+      } catch (error) {
+        console.error('Error loading user profile:', error);
+      }
+    };
+
+    loadUserProfile();
   }, [navigate]);
 
   return (
@@ -291,16 +379,17 @@ function Dashboard() {
           <span className="sub2-text">Automatic Disbursement Voucher</span>
         </div>
         <nav className="nav-links">
-          <button className="icon-button" onClick={() => navigate("/staffprofile")}>
-            {userProfile.picture ? (
-              <img
-                src={userProfile.picture}
-                alt="profile"
-                className="profile-picture"
-              />
-            ) : (
-              "👤"
-            )}
+          <button 
+            className="icon-button" 
+            onClick={() => navigate("/staffprofile")}
+            style={{ 
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '5px'
+            }}
+          >
+            <ProfileImage imageUrl={userProfile.picture} />
           </button>
           <div className="notification-container">
             <button className="notification-button" onClick={() => setShowNotifications(!showNotifications)}>

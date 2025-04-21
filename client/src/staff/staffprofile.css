@@ -169,9 +169,11 @@
     margin: 0.5rem 0;
   }
   
+  
   .profile-info .email {
     color: #666;
-    margin: 0;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
   }
   
   .profile-picture {
@@ -179,5 +181,53 @@
     height: 40px;
     border-radius: 50%;
     object-fit: cover;
+  }
+  
+  .file-input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 4px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+  }
+  
+  .file-input::-webkit-file-upload-button {
+    background: #0088FE;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+  }
+  
+  .file-input::-webkit-file-upload-button:hover {
+    background: #0077e6;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .form-group input:focus {
+    outline: none;
+    border-color: #0088FE;
+    box-shadow: 0 0 0 2px rgba(0, 136, 254, 0.1);
   }
 }

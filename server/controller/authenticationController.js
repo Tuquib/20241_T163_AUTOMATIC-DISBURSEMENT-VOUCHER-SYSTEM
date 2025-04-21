@@ -7,6 +7,7 @@ import crypto from 'crypto';
 import { sendPasswordResetEmail } from '../services/emailService.js';
 import { sendVerificationCode } from '../services/emailService.js';
 import mongoose from 'mongoose';
+import Staff from "../model/staffDB.js";
 
 dotenv.config();
 
@@ -82,6 +83,16 @@ const handleLogin = async (req, res) => {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
+    // Fetch staff data to get the picture
+    const staffData = await Staff.findOne({ email: user.email });
+    const picture = staffData ? staffData.picture : null;
+
+    // Update Authentication user's picture if staff picture exists
+    if (picture) {
+      user.picture = picture;
+      await user.save();
+    }
+
     // Generate JWT token with longer expiration
     const token = jwt.sign(
       {
@@ -118,7 +129,8 @@ const handleLogin = async (req, res) => {
         id: user._id,
         email: user.email,
         role: user.role,
-        name: user.name
+        name: user.name,
+        picture: user.picture
       }
     });
   } catch (error) {
@@ -308,7 +320,7 @@ const updateGoogleProfile = async (req, res) => {
   try {
     const { email, picture } = req.body;
 
-    // Find and update user
+    // Find and update user in Authentication collection
     const user = await Authentication.findOneAndUpdate(
       { email },
       { picture },
@@ -318,6 +330,13 @@ const updateGoogleProfile = async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
+
+    // Also update the Staff collection if the user exists there
+    await Staff.findOneAndUpdate(
+      { email },
+      { picture },
+      { new: true }
+    );
 
     res.status(200).json({ success: true, user });
   } catch (error) {

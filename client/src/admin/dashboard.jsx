@@ -19,7 +19,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { FaBell, FaFileInvoiceDollar } from 'react-icons/fa';
+import { FaBell, FaFileInvoiceDollar, FaUserCircle } from 'react-icons/fa';
 
 const clientId =
   "1083555345988-qc172fbg8ss4a7ptr55el7enke7g3s4v.apps.googleusercontent.com";
@@ -28,46 +28,100 @@ const onSuccess = () => {
   console.log("Logout Successfully!");
 };
 
+// Separate component for Profile Image
+const ProfileImage = ({ imageUrl }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    // Reset states when URL changes
+    setImageLoaded(false);
+    setImageError(false);
+  }, [imageUrl]);
+
+  if (!imageUrl || imageError) {
+    return <FaUserCircle size={40} color="#666" />;
+  }
+
+  return (
+    <div style={{ width: '40px', height: '40px', position: 'relative' }}>
+      <img
+        src={imageUrl}
+        alt="Profile"
+        style={{
+          width: '100%',
+          height: '100%',
+          borderRadius: '50%',
+          display: imageLoaded ? 'block' : 'none',
+        }}
+        onLoad={() => setImageLoaded(true)}
+        onError={() => setImageError(true)}
+      />
+      {!imageLoaded && !imageError && (
+        <FaUserCircle size={40} color="#666" style={{ position: 'absolute', top: 0, left: 0 }} />
+      )}
+    </div>
+  );
+};
+
 function Dashboard() {
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
   const [userProfile, setUserProfile] = useState({
-    picture: ''
+    picture: '',
+    name: '',
+    email: ''
   });
 
   useEffect(() => {
-    // Get user info from localStorage
-    const userEmail = localStorage.getItem('userEmail');
-    const userPicture = localStorage.getItem('userPicture');
-    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+    const loadUserProfile = async () => {
+      try {
+        // Get user info from localStorage
+        const userEmail = localStorage.getItem('userEmail');
+        const userPicture = localStorage.getItem('userPicture');
+        const userName = localStorage.getItem('userName');
+        const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
 
-    if (!userEmail) {
-      console.error('No user information found');
-      navigate('/');
-      return;
-    }
+        if (!userEmail) {
+          console.error('No user information found');
+          navigate('/');
+          return;
+        }
 
-    setUserProfile({
-      picture: userPicture || userInfo.picture || null
-    });
+        console.log('Profile picture URL:', userPicture || userInfo.picture);
+        console.log('User Info:', userInfo);
+
+        // Set the profile information
+        setUserProfile({
+          picture: userPicture || userInfo.picture || '',
+          name: userName || userInfo.name || '',
+          email: userEmail || userInfo.email || ''
+        });
+      } catch (error) {
+        console.error('Error loading user profile:', error);
+      }
+    };
+
+    loadUserProfile();
   }, [navigate]);
 
   const handleManageClick = () => {
-    navigate("/manage"); // Navigate to the Manage route when button is clicked
+    navigate("/manage");
   };
 
   const handleTaskClick = () => {
-    navigate("/addTask"); // Navigate to the Task route when button is clicked
+    navigate("/addTask");
   };
 
   const handleStaffClick = () => {
-    navigate("/addStaff"); // Navigate to the Staff route when button is clicked
+    navigate("/addStaff");
   };
 
   const handleProfileClick = () => {
-    navigate("/profile"); // Navigate to the Profile route when button is clicked
+    navigate("/profile");
   };
 
   const handleLogout = () => {
+    localStorage.clear();
     googleLogout();
     onSuccess();
     navigate("/");
@@ -256,14 +310,19 @@ function Dashboard() {
           <span className="sub2-text">Automatic Disbursement Voucher</span>
         </div>
         <nav className="nav-links">
-          <button className="icon-button" onClick={handleProfileClick}>
-          {userProfile.picture ? (
-              <img src={userProfile.picture} alt="profile" className="profile-picture" />
-            ) : (
-              "👤"
-            )}
+          <button 
+            className="icon-button" 
+            onClick={handleProfileClick}
+            style={{ 
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '5px'
+            }}
+          >
+            <ProfileImage imageUrl={userProfile.picture} />
           </button>
-         <div className="notification-container">
+          <div className="notification-container">
             <button className="notification-button" onClick={() => setShowNotifications(!showNotifications)}>
               <FaBell />
               {unreadNotifications > 0 && (
@@ -318,10 +377,6 @@ function Dashboard() {
               <h1>{taskCount}</h1>
             </div>
           </div>
-          <br /> <br />
-          <br />
-          <br />
-          <br />
           <div className="charts">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart

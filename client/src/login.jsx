@@ -171,38 +171,45 @@ function Login() {
     }
 
     try {
-      const response = await axios.post("http://localhost:8000/api/login", {
+      // First, attempt login
+      const loginResponse = await axios.post("http://localhost:8000/api/login", {
         email,
         password,
         recaptcha: recaptchaValue,
       });
 
-      if (response.data.success) {
-        // Store all necessary user data
-        localStorage.setItem("token", response.data.token);
-        localStorage.setItem("userEmail", response.data.user.email);
-        localStorage.setItem("userName", response.data.user.name);
-        localStorage.setItem("userRole", response.data.user.role);
-        localStorage.setItem("isAdmin", String(response.data.user.role === "admin"));
+      if (loginResponse.data.success) {
+        console.log("Login response:", loginResponse.data);
+
+        // Store basic user data
+        localStorage.setItem("jwtToken", loginResponse.data.token);  // Store JWT token
+        localStorage.setItem("userEmail", loginResponse.data.user.email);
+        localStorage.setItem("userName", loginResponse.data.user.name);
+        localStorage.setItem("userRole", loginResponse.data.user.role);
+        localStorage.setItem("isAdmin", String(loginResponse.data.user.role === "admin"));
         localStorage.setItem("isAuthenticated", "true");
-        localStorage.setItem("access_token", response.data.token);
+
+        // Store user picture if available
+        if (loginResponse.data.user.picture) {
+          localStorage.setItem("userPicture", loginResponse.data.user.picture);
+          localStorage.setItem("userInfo", JSON.stringify({
+            email: loginResponse.data.user.email,
+            name: loginResponse.data.user.name,
+            picture: loginResponse.data.user.picture
+          }));
+        }
 
         // Navigate based on role
-        if (response.data.user.role === "admin") {
-          console.log(
-            "Admin login successful! Redirecting to admin dashboard..."
-          );
-          navigate("/dashboard", { replace: true });
-        } else if (response.data.user.role === "staff") {
-          console.log(
-            "Staff login successful! Redirecting to staff dashboard..."
-          );
+        if (loginResponse.data.user.role === "staff") {
+          console.log("Staff login successful! Redirecting to staff dashboard...");
           navigate("/staffDashboard", { replace: true });
+        } else {
+          console.log("Admin login successful! Redirecting to admin dashboard...");
+          navigate("/dashboard", { replace: true });
         }
       }
     } catch (error) {
       console.error("Login error details:", error);
-      // More specific error messages
       if (error.response?.status === 401) {
         alert("Invalid email or password. Please try again.");
       } else if (error.response?.status === 400) {
