@@ -45,9 +45,13 @@ import voucherRoutes from "./routes/voucherRoute.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import notificationRoutes from "./routes/notificationRoute.js";
 import voucherLockRoutes from "./routes/voucherLockRoutes.js";
+import accountMappingRoutes from "./routes/accountMappingRoutes.js";
 
-// Register routes in correct order
-app.use("/api", voucherRoutes);  // Register voucher routes first
+// Register account-mapping route FIRST to avoid conflicts
+app.use("/api/account-mapping", accountMappingRoutes);
+
+// Register other routes
+app.use("/api", voucherRoutes);
 app.use("/api", taskRoutes);
 app.use("/api", staffRoutes);
 app.use("/api", authenticationRoutes);

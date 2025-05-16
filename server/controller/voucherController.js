@@ -67,29 +67,52 @@ const getVoucher = async (req, res) => {
   }
 };
 
-// Get Next DV Number
+// Get Next DV Number (as string, e.g., 'Buksu-337')
 const getNextDvNumber = async (req, res) => {
   try {
-    const counter = await Counter.findOneAndUpdate(
+    let counter = await Counter.findOne({ name: "dvNumber" });
+    let nextDvNumber = "Buksu-1";
+    if (counter && counter.sequenceValue) {
+      // Extract the numeric part and increment
+      const match = counter.sequenceValue.match(/(\d+)$/);
+      if (match) {
+        const num = parseInt(match[1], 10) + 1;
+        nextDvNumber = `Buksu-${num}`;
+      }
+    }
+    // Update the counter document
+    await Counter.findOneAndUpdate(
       { name: "dvNumber" },
-      { $inc: { sequenceValue: 1 } },
+      { sequenceValue: nextDvNumber },
       { new: true, upsert: true }
     );
-    res.status(200).json({ dvNumber: counter.sequenceValue });
+    res.status(200).json({ dvNumber: nextDvNumber });
   } catch (error) {
     console.error("Error retrieving next DV number:", error);
     res.status(500).send("Error retrieving next DV number");
   }
 };
 
+// Get Next Fund Cluster (as string, e.g., 'Buksu-336')
 const getNextFundCluster = async (req, res) => {
   try {
-    const counter = await Counter.findOneAndUpdate(
+    let counter = await Counter.findOne({ name: "fundCluster" });
+    let nextFundCluster = "Buksu-1";
+    if (counter && counter.sequenceValue) {
+      // Extract the numeric part and increment
+      const match = counter.sequenceValue.match(/(\d+)$/);
+      if (match) {
+        const num = parseInt(match[1], 10) + 1;
+        nextFundCluster = `Buksu-${num}`;
+      }
+    }
+    // Update the counter document
+    await Counter.findOneAndUpdate(
       { name: "fundCluster" },
-      { $inc: { sequenceValue: 1 } },
+      { sequenceValue: nextFundCluster },
       { new: true, upsert: true }
     );
-    res.status(200).json({ fundCluster: counter.sequenceValue });
+    res.status(200).json({ fundCluster: nextFundCluster });
   } catch (error) {
     console.error("Error retrieving next fund cluster:", error);
     res.status(500).send("Error retrieving next fund cluster");

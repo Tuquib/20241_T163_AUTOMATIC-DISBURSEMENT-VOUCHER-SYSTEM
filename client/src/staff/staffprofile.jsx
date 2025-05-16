@@ -354,11 +354,11 @@ function StaffProfile() {
                 )}
               </div>
               {!isEditing ? (
-                <div className="profile-info">
-                  <h2>{userProfile.name}</h2>
-                  <p className="role">{userProfile.role}</p>
+              <div className="profile-info">
+                <h2>{userProfile.name}</h2>
+                <p className="role">{userProfile.role}</p>
                   <p className="position"style={{color: "#666"}}>{userProfile.position || 'No position set'}</p>
-                  <p className="email">{userProfile.email}</p>
+                <p className="email">{userProfile.email}</p>
                   <p className="contact" style={{color: "#666"}}>{userProfile.contactNumber || 'No contact number set'}</p>
                   <button className="edit-profile-btn" onClick={handleEditClick}>
                     Edit Profile
@@ -413,7 +413,7 @@ function StaffProfile() {
                       </button>
                     </div>
                   </form>
-                </div>
+              </div>
               )}
             </div>
           </div>

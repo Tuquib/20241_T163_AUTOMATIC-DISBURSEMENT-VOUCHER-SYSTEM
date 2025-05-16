@@ -43,64 +43,64 @@ function Login() {
       return;
     }
 
-    try {
-      console.log(
-        "Google login successful, got access token:",
+      try {
+        console.log(
+          "Google login successful, got access token:",
         googleResponse.access_token ? "Yes" : "No"
-      );
-      
-      // Store access token consistently
+        );
+        
+        // Store access token consistently
       localStorage.setItem("access_token", googleResponse.access_token);
 
-      console.log("Fetching user info from Google...");
-      // Get user info from Google
-      const userInfo = await axios.get(
-        "https://www.googleapis.com/oauth2/v3/userinfo",
-        {
-          headers: { Authorization: `Bearer ${googleResponse.access_token}` },
-        }
-      );
-
-      console.log("Got user info:", {
-        email: userInfo.data.email,
-        name: userInfo.data.name,
-        picture: userInfo.data.picture,
-      });
-
-      // Store user info separately
-      localStorage.setItem("userEmail", userInfo.data.email);
-      localStorage.setItem("userName", userInfo.data.name);
-      localStorage.setItem("userPicture", userInfo.data.picture);
-      localStorage.setItem("userInfo", JSON.stringify(userInfo.data));
-      localStorage.setItem("isAdmin", "true");
-
-      // Initialize Google Drive for admin
-      console.log("Initializing Google Drive for admin user...");
-      try {
-        const driveResponse = await axios.post(
-          "http://localhost:8000/api/admin/initialize-drive",
+        console.log("Fetching user info from Google...");
+        // Get user info from Google
+        const userInfo = await axios.get(
+          "https://www.googleapis.com/oauth2/v3/userinfo",
           {
-            accessToken: googleResponse.access_token,
-            email: userInfo.data.email,
+          headers: { Authorization: `Bearer ${googleResponse.access_token}` },
           }
         );
-        console.log("Google Drive initialization successful");
-      } catch (driveError) {
-        console.error("Error initializing Google Drive:", driveError);
-        // Continue with login even if drive initialization fails
-      }
+
+        console.log("Got user info:", {
+          email: userInfo.data.email,
+          name: userInfo.data.name,
+          picture: userInfo.data.picture,
+        });
+
+        // Store user info separately
+        localStorage.setItem("userEmail", userInfo.data.email);
+        localStorage.setItem("userName", userInfo.data.name);
+        localStorage.setItem("userPicture", userInfo.data.picture);
+        localStorage.setItem("userInfo", JSON.stringify(userInfo.data));
+      localStorage.setItem("isAdmin", "true");
+
+            // Initialize Google Drive for admin
+            console.log("Initializing Google Drive for admin user...");
+            try {
+              const driveResponse = await axios.post(
+                "http://localhost:8000/api/admin/initialize-drive",
+                {
+            accessToken: googleResponse.access_token,
+                  email: userInfo.data.email,
+                }
+              );
+              console.log("Google Drive initialization successful");
+            } catch (driveError) {
+              console.error("Error initializing Google Drive:", driveError);
+              // Continue with login even if drive initialization fails
+            }
 
       console.log("Admin login successful! Redirecting to admin dashboard...");
-      navigate("/dashboard");
-    } catch (error) {
-      console.error("Error during Google login:", error);
-      console.error("Error details:", {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-      });
-      alert("Failed to login with Google. Please try again.");
-    }
+            navigate("/dashboard");
+      } catch (error) {
+        console.error("Error during Google login:", error);
+        console.error("Error details:", {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status,
+        });
+        alert("Failed to login with Google. Please try again.");
+      }
   };
 
   const login = useGoogleLogin({
@@ -149,40 +149,40 @@ function Login() {
       Sign In
     </h2>
     {!showRecaptcha ? (
-      <button
-        type="button"
-        onClick={login}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "0.75rem",
-          padding: "0.75rem 1rem",
-          backgroundColor: "#4285F4",
-          color: "#fff",
-          fontSize: "1rem",
-          fontWeight: "500",
-          border: "none",
-          borderRadius: "0.5rem",
-          cursor: "pointer",
-          boxShadow: "0 4px 12px rgba(66, 133, 244, 0.3)",
-          transition: "all 0.3s ease",
-          marginLeft: "67px",
-        }}
-        onMouseOver={(e) =>
-          (e.currentTarget.style.backgroundColor = "#3367D6")
-        }
-        onMouseOut={(e) =>
-          (e.currentTarget.style.backgroundColor = "#4285F4")
-        }
-      >
-        <img
-          src="https://developers.google.com/identity/images/g-logo.png"
-          alt="Google icon"
-          style={{ width: "20px", height: "20px" }}
-        />
-        Sign in with Google
-      </button>
+    <button
+      type="button"
+      onClick={login}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "0.75rem",
+        padding: "0.75rem 1rem",
+        backgroundColor: "#4285F4",
+        color: "#fff",
+        fontSize: "1rem",
+        fontWeight: "500",
+        border: "none",
+        borderRadius: "0.5rem",
+        cursor: "pointer",
+        boxShadow: "0 4px 12px rgba(66, 133, 244, 0.3)",
+        transition: "all 0.3s ease",
+        marginLeft: "67px",
+      }}
+      onMouseOver={(e) =>
+        (e.currentTarget.style.backgroundColor = "#3367D6")
+      }
+      onMouseOut={(e) =>
+        (e.currentTarget.style.backgroundColor = "#4285F4")
+      }
+    >
+      <img
+        src="https://developers.google.com/identity/images/g-logo.png"
+        alt="Google icon"
+        style={{ width: "20px", height: "20px" }}
+      />
+      Sign in with Google
+    </button>
     ) : (
       <>
         <ReCAPTCHA

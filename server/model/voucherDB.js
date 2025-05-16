@@ -3,8 +3,8 @@ import mongoose from "mongoose";
 import Counter from "./counter.js";
 
 const voucherSchema = new mongoose.Schema({
-  dvNumber: { type: Number, required: true, unique: true },
-  fundCluster: { type: Number, required: true },
+  dvNumber: { type: String, required: true, unique: true },
+  fundCluster: { type: String, required: true },
   voucherName: { type: String, required: true },
   staffEmail: { type: String, required: true },
   staffName: { type: String, required: true },
@@ -26,21 +26,39 @@ const voucherSchema = new mongoose.Schema({
 voucherSchema.pre("save", async function (next) {
   try {
     if (!this.dvNumber) {
-      const dvCounter = await Counter.findOneAndUpdate(
+      let dvCounter = await Counter.findOne({ name: "dvNumber" });
+      let nextDvNumber = "Buksu-1";
+      if (dvCounter && dvCounter.sequenceValue) {
+        const match = dvCounter.sequenceValue.match(/(\d+)$/);
+        if (match) {
+          const num = parseInt(match[1], 10) + 1;
+          nextDvNumber = `Buksu-${num}`;
+        }
+      }
+      await Counter.findOneAndUpdate(
         { name: "dvNumber" },
-        { $inc: { sequenceValue: 1 } },
+        { sequenceValue: nextDvNumber },
         { new: true, upsert: true }
       );
-      this.dvNumber = dvCounter.sequenceValue;
+      this.dvNumber = nextDvNumber;
     }
 
     if (!this.fundCluster) {
-      const fundClusterCounter = await Counter.findOneAndUpdate(
+      let fundClusterCounter = await Counter.findOne({ name: "fundCluster" });
+      let nextFundCluster = "Buksu-1";
+      if (fundClusterCounter && fundClusterCounter.sequenceValue) {
+        const match = fundClusterCounter.sequenceValue.match(/(\d+)$/);
+        if (match) {
+          const num = parseInt(match[1], 10) + 1;
+          nextFundCluster = `Buksu-${num}`;
+        }
+      }
+      await Counter.findOneAndUpdate(
         { name: "fundCluster" },
-        { $inc: { sequenceValue: 1 } },
+        { sequenceValue: nextFundCluster },
         { new: true, upsert: true }
       );
-      this.fundCluster = fundClusterCounter.sequenceValue;
+      this.fundCluster = nextFundCluster;
     }
 
     this.updatedAt = new Date();

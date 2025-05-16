@@ -34,8 +34,6 @@ const CreateVoucher = () => {
     bursNumber: "",
     particulars: "",
     nameOfVicePresident: "DR. HAZEL JEAN M. ABEJUELA",
-    accountTitle: "",
-    uacsCode: "",
     certified: "Cash Available",
     approvedOfPayment: "",
     printedName1: "JUDITHA G. PAGARAN",
@@ -48,6 +46,24 @@ const CreateVoucher = () => {
     calculatorInput: "",
     operation: "",
   });
+
+  // Modify the entries state structure to support multiple debits per credit
+  const [entries, setEntries] = useState([
+    {
+      id: 1,
+      credit: {
+        accountTitle: "",
+        uacsCode: ""
+      },
+      debits: [
+        {
+          accountTitle: "",
+          uacsCode: ""
+        }
+      ]
+    }
+  ]);
+
   const [dvNumber, setDvNumber] = useState(null);
   const [fundCluster, setFundCluster] = useState(null);
   const [error, setError] = useState(null);
@@ -60,6 +76,12 @@ const CreateVoucher = () => {
     picture: "",
   });
   const [voucherLock, setVoucherLock] = useState(null);
+  const [debitAccounts, setDebitAccounts] = useState([]);
+  const [showDebitDropdown, setShowDebitDropdown] = useState(false);
+  const [creditOptions, setCreditOptions] = useState([]);
+
+  // Add new state for storing debit accounts for each entry
+  const [entryDebitAccounts, setEntryDebitAccounts] = useState({});
 
   // Utility functions
   const numberToWords = (num) => {
@@ -219,6 +241,208 @@ const CreateVoucher = () => {
     }));
   };
 
+  const handleAccountTitleChange = async (e) => {
+    const accountTitle = e.target.value;
+    setFormData(prev => ({ ...prev, accountTitle }));
+
+    try {
+      const response = await axios.get(`/api/account-mapping/${encodeURIComponent(accountTitle)}`);
+      if (response.data.debitAccounts && response.data.debitAccounts.length > 0) {
+        setDebitAccounts(response.data.debitAccounts);
+        setShowDebitDropdown(true);
+        setFormData(prev => ({ 
+          ...prev, 
+          uacsCode: response.data.creditAccount.uacsCode 
+        }));
+      } else {
+        setDebitAccounts([]);
+        setShowDebitDropdown(false);
+        setFormData(prev => ({ 
+          ...prev, 
+          debitAccount: "",
+          debitUacsCode: ""
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching debit accounts:", error);
+      setDebitAccounts([]);
+      setShowDebitDropdown(false);
+    }
+  };
+
+  const handleDebitAccountChange = (e) => {
+    const selectedDebit = debitAccounts.find(
+      account => account.title === e.target.value
+    );
+    
+    setFormData(prev => ({
+      ...prev,
+      debitAccount: e.target.value,
+      debitUacsCode: selectedDebit ? selectedDebit.uacsCode : ""
+    }));
+  };
+
+  const handleAddEntry = () => {
+    const newId = entries.length + 1;
+    setEntries(prev => [...prev, {
+      id: newId,
+      credit: {
+        accountTitle: "",
+        uacsCode: ""
+      },
+      debits: [
+        {
+          accountTitle: "",
+          uacsCode: ""
+        }
+      ]
+    }]);
+    setEntryDebitAccounts(prev => ({
+      ...prev,
+      [newId]: []
+    }));
+  };
+
+  const handleRemoveEntry = (id) => {
+    setEntries(prev => prev.filter(entry => entry.id !== id));
+    setEntryDebitAccounts(prev => {
+      const newDebitAccounts = { ...prev };
+      delete newDebitAccounts[id];
+      return newDebitAccounts;
+    });
+  };
+
+  const handleAddDebit = (entryId) => {
+    setEntries(prev => prev.map(entry => {
+      if (entry.id === entryId) {
+        return {
+          ...entry,
+          debits: [
+            ...entry.debits,
+            {
+              accountTitle: "",
+              uacsCode: ""
+            }
+          ]
+        };
+      }
+      return entry;
+    }));
+  };
+
+  const handleRemoveDebit = (entryId, debitIndex) => {
+    setEntries(prev => prev.map(entry => {
+      if (entry.id === entryId) {
+        const newDebits = [...entry.debits];
+        newDebits.splice(debitIndex, 1);
+        return {
+          ...entry,
+          debits: newDebits
+        };
+      }
+      return entry;
+    }));
+  };
+
+  const handleEntryChange = async (id, type, field, value, debitIndex = 0) => {
+    if (field === 'accountTitle') {
+      try {
+        setLoading(true);
+        setLoadingMessage(`Fetching account mapping for ${value}...`);
+
+        if (type === 'credit') {
+          const response = await axios.get(`http://localhost:8000/api/account-mapping/${encodeURIComponent(value)}`);
+          
+          if (!response.data.creditAccount) {
+            throw new Error(`No mapping found for ${value}`);
+          }
+
+          setEntries(prev => prev.map(entry => {
+            if (entry.id === id) {
+              return {
+                ...entry,
+                credit: {
+                  accountTitle: value,
+                  uacsCode: response.data.creditAccount.uacsCode
+                },
+                // Reset all debits when credit changes
+                debits: [{
+                  accountTitle: "",
+                  uacsCode: ""
+                }]
+              };
+            }
+            return entry;
+          }));
+
+          setEntryDebitAccounts(prev => ({
+            ...prev,
+            [id]: response.data.debitAccounts || []
+          }));
+
+          setError(null);
+        } else if (type === 'debit') {
+          const selectedDebit = entryDebitAccounts[id]?.find(acc => acc.title === value);
+          
+          if (!selectedDebit) {
+            throw new Error(`Invalid debit account selection for ${value}`);
+          }
+
+          setEntries(prev => prev.map(entry => {
+            if (entry.id === id) {
+              const newDebits = [...entry.debits];
+              newDebits[debitIndex] = {
+                accountTitle: value,
+                uacsCode: selectedDebit.uacsCode
+              };
+              return {
+                ...entry,
+                debits: newDebits
+              };
+            }
+            return entry;
+          }));
+
+          setError(null);
+        }
+      } catch (error) {
+        console.error("Error handling account change:", error);
+        
+        if (error.response?.status === 404) {
+          setError(`Account mapping not found for "${value}". Please contact the administrator to set up the account mapping.`);
+        } else {
+          setError(`Failed to process account selection for "${value}". Please try again.`);
+        }
+        
+        if (type === 'credit') {
+          setEntries(prev => prev.map(entry => {
+            if (entry.id === id) {
+              return {
+                ...entry,
+                credit: {
+                  accountTitle: "",
+                  uacsCode: ""
+                },
+                debits: [{
+                  accountTitle: "",
+                  uacsCode: ""
+                }]
+              };
+            }
+            return entry;
+          }));
+          setEntryDebitAccounts(prev => ({
+            ...prev,
+            [id]: []
+          }));
+        }
+      } finally {
+        setLoading(false);
+        setLoadingMessage("");
+      }
+    }
+  };
+
   // Notification functions
   const fetchNotifications = async () => {
     try {
@@ -336,18 +560,31 @@ const CreateVoucher = () => {
       // Try to acquire lock BEFORE setting loading state
       const lockAcquired = await acquireLock();
       if (!lockAcquired) {
-        // If lock fails, another staff is creating a voucher
-        return; // Exit immediately without processing form
+        return;
       }
 
-      // Only set loading after lock is acquired
       setLoading(true);
       setError(null);
+
+      // Prepare the complete form data
+      const completeFormData = {
+        ...formData,
+        entries: entries.map(entry => ({
+          credit: {
+            accountTitle: entry.credit.accountTitle || "",
+            uacsCode: entry.credit.uacsCode || ""
+          },
+          debits: entry.debits.map(debit => ({
+            accountTitle: debit.accountTitle || "",
+            uacsCode: debit.uacsCode || ""
+          }))
+        }))
+      };
 
       setLoadingMessage("Writing data to Google Sheet...");
       await writeDataToGoogleSheet(
         SPREADSHEET_ID,
-        formatDVFormData(formData, fundCluster, dvNumber)
+        formatDVFormData(completeFormData, fundCluster, dvNumber)
       );
 
       setLoadingMessage("Generating to post in Google Drive file...");
@@ -355,7 +592,7 @@ const CreateVoucher = () => {
         SPREADSHEET_ID,
         "DV",
         dvNumber,
-        formData
+        completeFormData
       );
 
       setLoadingMessage("Saving voucher information...");
@@ -367,6 +604,28 @@ const CreateVoucher = () => {
           driveFileId: fileId,
           webViewLink,
           status: "Pending",
+          payeeName: formData.payeeName || "",
+          amount: formData.amount || "",
+          totalAmount: formData.totalAmount || "",
+          date: formData.date || "",
+          modeOfPayment: formData.modeOfPayment || "",
+          address: formData.address || "",
+          tinNumber: formData.tinNumber || "",
+          bursNumber: formData.bursNumber || "",
+          particulars: formData.particulars || "",
+          responsibilityCenter: formData.responsibilityCenter || "",
+          mfoPap: formData.mfoPap || "",
+          nameOfVicePresident: formData.nameOfVicePresident || "",
+          certified: formData.certified || "",
+          approvedOfPayment: formData.approvedOfPayment || "",
+          printedName1: formData.printedName1 || "",
+          position1: formData.position1 || "",
+          printedName2: formData.printedName2 || "",
+          position2: formData.position2 || "",
+          checkADANo: formData.checkADANo || "",
+          bankNameAndAccountNo: formData.bankNameAndAccountNo || "",
+          officialReceiptNo: formData.officialReceiptNo || "",
+          entries: completeFormData.entries
         },
         accessToken,
         staffEmail,
@@ -381,21 +640,90 @@ const CreateVoucher = () => {
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
           },
         }
       );
 
       console.log("Voucher created successfully:", response.data);
       alert("Voucher created successfully!");
-      window.location.href = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit?gid=583941779#gid=583941779`;
+      
+      // Open Google Sheet in new tab
+      const sheetWindow = window.open(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit?gid=583941779#gid=583941779`, '_blank');
+      
+      // Add a small delay before redirecting to ensure the new tab opens
+      setTimeout(() => {
+        if (sheetWindow) {
+          window.location.href = "/staffDashboard";
+        } else {
+          // If popup was blocked, show message and then redirect
+          alert("Please allow popups to view the Google Sheet. Redirecting to dashboard...");
+          window.location.href = "/staffDashboard";
+        }
+      }, 1000);
     } catch (error) {
       console.error("Error creating voucher:", error);
-      setError(error.message || "Failed to create voucher. Please try again.");
+      if (error.response) {
+        setError(error.response.data.message || "Failed to create voucher. Please try again.");
+      } else {
+        setError(error.message || "Failed to create voucher. Please try again.");
+      }
     } finally {
-      await releaseLock(); // Always release the lock
+      await releaseLock();
       setLoading(false);
       setLoadingMessage("");
     }
+  };
+
+  // Add these handlers after the other handlers
+  const handleAccountantNameChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      printedName1: e.target.value
+    }));
+  };
+
+  const handleAccountantPositionChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      position1: e.target.value
+    }));
+  };
+
+  const handlePresidentNameChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      printedName2: e.target.value
+    }));
+  };
+
+  const handlePresidentPositionChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      position2: e.target.value
+    }));
+  };
+
+  const handlePayeeNameChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      payeeName: e.target.value
+    }));
+  };
+
+  const handleFundClusterChange = (e) => {
+    setFundCluster(e.target.value);
+  };
+
+  const handleDateChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      date: e.target.value
+    }));
+  };
+
+  const handleDvNumberChange = (e) => {
+    setDvNumber(e.target.value);
   };
 
   // Effects
@@ -478,6 +806,12 @@ const CreateVoucher = () => {
       }
     };
   }, [voucherLock]);
+
+  useEffect(() => {
+    axios.get("http://localhost:8000/api/account-mapping")
+      .then(res => setCreditOptions(res.data))
+      .catch(err => console.error("Error fetching credit options:", err));
+  }, []);
 
   if (error) {
     return <div className="error">{error}</div>;
@@ -587,21 +921,35 @@ const CreateVoucher = () => {
               {/* Form Fields */}
               <div>
                 <label>Payee Name:</label>
-                <input type="text" value={formData.payeeName} readOnly />
+                <input 
+                  type="text" 
+                  value={formData.payeeName} 
+                  onChange={handlePayeeNameChange}
+                />
               </div>
               <div>
                 <label>Fund Cluster:</label>
-                <span className="fund-cluster">
-                  {fundCluster || "Not available"}
-                </span>
+                <input 
+                  type="text"
+                  value={fundCluster || ""}
+                  onChange={handleFundClusterChange}
+                />
               </div>
               <div>
                 <label>Date:</label>
-                <input type="date" value={formData.date} readOnly />
+                <input 
+                  type="date" 
+                  value={formData.date} 
+                  onChange={handleDateChange}
+                />
               </div>
               <div>
                 <label>DV Number:</label>
-                <span className="dv-number">{dvNumber || "Not available"}</span>
+                <input 
+                  type="text"
+                  value={dvNumber || ""}
+                  onChange={handleDvNumberChange}
+                />
               </div>
               <div>
                 <label>Mode of Payment:</label>
@@ -627,7 +975,7 @@ const CreateVoucher = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, address: e.target.value })
                   }
-                  required
+                  
                 />
               </div>
               <div>
@@ -638,7 +986,6 @@ const CreateVoucher = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, tinNumber: e.target.value })
                   }
-                  required
                 />
               </div>
               <div>
@@ -649,7 +996,7 @@ const CreateVoucher = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, bursNumber: e.target.value })
                   }
-                  required
+                  
                 />
               </div>
               <div className="full-width">
@@ -660,7 +1007,7 @@ const CreateVoucher = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, particulars: e.target.value })
                   }
-                  required
+                  
                 />
               </div>
               <div>
@@ -674,7 +1021,7 @@ const CreateVoucher = () => {
                       responsibilityCenter: e.target.value,
                     })
                   }
-                  required
+                  
                 />
               </div>
               <div>
@@ -685,7 +1032,7 @@ const CreateVoucher = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, mfoPap: e.target.value })
                   }
-                  required
+                  
                 />
               </div>
               <div>
@@ -695,7 +1042,7 @@ const CreateVoucher = () => {
                   name="amount"
                   onChange={handleAmountChange}
                   value={formData.amount}
-                  required
+                  
                 />
               </div>
               {/* Calculator Section */}
@@ -750,27 +1097,114 @@ const CreateVoucher = () => {
                   <option value="DR. LINCOLN V. TAN">DR. LINCOLN V. TAN</option>
                 </select>
               </div>
-              <div>
-                <label>Account Title:</label>
-                <input
-                  type="text"
-                  name="accountTitle"
-                  onChange={(e) =>
-                    setFormData({ ...formData, accountTitle: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div>
-                <label>UACS Code:</label>
-                <input
-                  type="text"
-                  name="uacsCode"
-                  onChange={(e) =>
-                    setFormData({ ...formData, uacsCode: e.target.value })
-                  }
-                  required
-                />
+              <div className="entries-section">
+                <h3 style={{textAlign: "center", color: "#555"}}>Account Entries</h3>
+                {entries.map((entry) => (
+                  <div key={entry.id} className="entry-row">
+                    <div className="entry-header">
+                      <h4>Entry #{entry.id}</h4>
+                      {entries.length > 1 && (
+                        <button 
+                          type="button" 
+                          onClick={() => handleRemoveEntry(entry.id)}
+                          className="remove-entry-btn"
+                        >
+                          Remove Entry
+                        </button>
+                      )}
+                    </div>
+                    
+                    <div className="entry-content">
+                      <div className="credit-section">
+                        <h5>Debit</h5>
+                        <div>
+                          <label>Account Title:</label>
+                          <select
+                            value={entry.credit.accountTitle}
+                            onChange={(e) => handleEntryChange(entry.id, 'credit', 'accountTitle', e.target.value)}
+                            
+                          >
+                            <option value="">Select Debit</option>
+                            {creditOptions.map((credit, idx) => (
+                              <option key={idx} value={credit.title}>
+                                {credit.title}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label>UACS Code:</label>
+                          <input
+                            type="text"
+                            value={entry.credit.uacsCode}
+                            readOnly
+                          />
+                        </div>
+                      </div>
+
+                      {/* Only show debit section if there are debit accounts available */}
+                      {entryDebitAccounts[entry.id]?.length > 0 && (
+                        <div className="debit-section">
+                          <h5>Credit</h5>
+                          {entry.debits.map((debit, index) => (
+                            <div key={index} className="debit-entry">
+                              <div className="debit-header">
+                                <h6>Credit #{index + 1}</h6>
+                                {entry.debits.length > 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveDebit(entry.id, index)}
+                                    className="remove-debit-btn"
+                                  >
+                                    Remove Credit
+                                  </button>
+                                )}
+                              </div>
+                              <div>
+                                <label>Account Title:</label>
+                                <select
+                                  value={debit.accountTitle}
+                                  onChange={(e) => handleEntryChange(entry.id, 'debit', 'accountTitle', e.target.value, index)}
+                                  
+                                >
+                                  <option value="">Select Credit</option>
+                                  {entryDebitAccounts[entry.id]?.map((account, idx) => (
+                                    <option key={idx} value={account.title}>
+                                      {account.title}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div>
+                                <label>UACS Code:</label>
+                                <input
+                                  type="text"
+                                  value={debit.uacsCode}
+                                  readOnly
+                                />
+                              </div>
+                            </div>
+                          ))}
+                          <button
+                            type="button"
+                            onClick={() => handleAddDebit(entry.id)}
+                            className="add-debit-btn"
+                          >
+                            Add Another Credit
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                
+                <button 
+                  type="button" 
+                  onClick={handleAddEntry}
+                  className="add-entry-btn"
+                >
+                  Add Another Entry
+                </button>
               </div>
               <div>
                 <label>Certified:</label>
@@ -801,20 +1235,36 @@ const CreateVoucher = () => {
                 />
               </div>
               <div>
-                <label>Printed Name:</label>
-                <input type="text" value={formData.printedName1} readOnly />
+                <label>Accountant Name:</label>
+                <input 
+                  type="text" 
+                  value={formData.printedName1}
+                  onChange={handleAccountantNameChange}
+                />
               </div>
               <div>
                 <label>Position:</label>
-                <input type="text" value={formData.position1} readOnly />
+                <input 
+                  type="text" 
+                  value={formData.position1}
+                  onChange={handleAccountantPositionChange}
+                />
               </div>
               <div>
-                <label>Printed Name:</label>
-                <input type="text" value={formData.printedName2} readOnly />
+                <label>University President:</label>
+                <input 
+                  type="text" 
+                  value={formData.printedName2}
+                  onChange={handlePresidentNameChange}
+                />
               </div>
               <div>
                 <label>Position:</label>
-                <input type="text" value={formData.position2} readOnly />
+                <input 
+                  type="text" 
+                  value={formData.position2}
+                  onChange={handlePresidentPositionChange}
+                />
               </div>
               <div>
                 <label>Check/ADA No.:</label>

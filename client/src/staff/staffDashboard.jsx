@@ -312,11 +312,11 @@ function Dashboard() {
         const userName = localStorage.getItem('userName');
         const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
 
-        if (!userEmail) {
+    if (!userEmail) {
           console.error('No user information found');
           navigate('/');
-          return;
-        }
+      return;
+    }
 
         // Debug logs
         console.log('Loading profile data:');
@@ -355,7 +355,7 @@ function Dashboard() {
           }
         } catch (error) {
           console.error('Error fetching profile from database:', error);
-          setUserProfile({
+    setUserProfile({
             picture: userPicture || userInfo.picture || '',
             name: userName || userInfo.name || '',
             email: userEmail || userInfo.email || ''

@@ -1,13 +1,11 @@
 import { useEffect } from "react";
 
-// Google API credentials
+// Constants at the top of the file
 const API_KEY = "AIzaSyBpFglT36khvpdYzAClcKzC7FQAKmCqTLo";
-const CLIENT_ID =
-  "1083555345988-gn8aofa2r66795u3h7htnku217gfr1qj.apps.googleusercontent.com";
-const SCOPES =
-  "https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file";
-const DISCOVERY_DOC =
-  "https://sheets.googleapis.com/$discovery/rest?version=v4";
+const CLIENT_ID = "1083555345988-gn8aofa2r66795u3h7htnku217gfr1qj.apps.googleusercontent.com";
+const SCOPES = "https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file";
+const DISCOVERY_DOC = "https://sheets.googleapis.com/$discovery/rest?version=v4";
+const SPREADSHEET_ID = "1dFqPinG16buAgBpzdtPV1ClZlad1lFiwLj0FYEJeeEI";
 
 // Initialize the Google API client
 export const initGoogleAPI = async () => {
@@ -42,10 +40,23 @@ export const initGoogleAPI = async () => {
       access_token: token,
     });
 
-    console.log("Google API initialized successfully");
+    // Verify the token is working
+    try {
+      await window.gapi.client.sheets.spreadsheets.get({
+        spreadsheetId: SPREADSHEET_ID
+      });
+      console.log("Google API initialized successfully");
+    } catch (error) {
+      if (error.status === 401) {
+        // Token is invalid or expired
+        localStorage.removeItem("access_token");
+        throw new Error("Your session has expired. Please log in again.");
+      }
+      throw error;
+    }
   } catch (error) {
     console.error("Error initializing Google API:", error);
-    throw new Error("Failed to initialize Google API");
+    throw new Error("Failed to initialize Google API. Please try logging in again.");
   }
 };
 
@@ -63,14 +74,17 @@ export const writeDataToGoogleSheet = async (SPREADSHEET_ID, updates) => {
   try {
     // Get a fresh access token
     const accessToken = await getAccessToken();
+    if (!accessToken) {
+      throw new Error("No access token available. Please log in again.");
+    }
 
     // Update the sheets API with the new token
     window.gapi.client.setToken({ access_token: accessToken });
 
     // Process each update individually
     for (const update of updates) {
-      const response =
-        await window.gapi.client.sheets.spreadsheets.values.update({
+      try {
+        const response = await window.gapi.client.sheets.spreadsheets.values.update({
           spreadsheetId: SPREADSHEET_ID,
           range: update.range,
           valueInputOption: "USER_ENTERED",
@@ -78,7 +92,15 @@ export const writeDataToGoogleSheet = async (SPREADSHEET_ID, updates) => {
             values: update.values,
           },
         });
-      console.log(`Updated ${update.range}:`, response.result);
+        console.log(`Updated ${update.range}:`, response.result);
+      } catch (error) {
+        if (error.status === 401) {
+          // Token is invalid or expired
+          localStorage.removeItem("access_token");
+          throw new Error("Your session has expired. Please log in again.");
+        }
+        throw error;
+      }
     }
 
     console.log("All updates completed successfully");
@@ -91,7 +113,7 @@ export const writeDataToGoogleSheet = async (SPREADSHEET_ID, updates) => {
 
 // Format DV form data for Google Sheets
 export const formatDVFormData = (formData, fundCluster, dvNumber) => {
-  const updates = [
+  const data = [
     {
       range: "DV!AB6:AG6",
       values: [[fundCluster]],
@@ -133,10 +155,6 @@ export const formatDVFormData = (formData, fundCluster, dvNumber) => {
       values: [[formData.mfoPap]],
     },
     {
-      range: "DV!W19:AA21",
-      values: [[formData.burs]],
-    },
-    {
       range: "DV!AB19:AG19",
       values: [[formData.amount]],
     },
@@ -153,16 +171,8 @@ export const formatDVFormData = (formData, fundCluster, dvNumber) => {
       values: [[formData.totalAmount]],
     },
     {
-      range: "DV!S37:AG43",
+      range: "DV!S42:AG48",
       values: [[formData.approvedOfPayment]],
-    },
-    {
-      range: "DV!A33:R35",
-      values: [[formData.accountTitle]],
-    },
-    {
-      range: "DV!S33:W34",
-      values: [[formData.uacsCode]],
     },
     {
       range: "DV!X33:AB34",
@@ -173,36 +183,46 @@ export const formatDVFormData = (formData, fundCluster, dvNumber) => {
       values: [[formData.totalAmount]],
     },
     {
-      range: "DV!E46:R47",
+      range: "DV!E51:R52",
       values: [[formData.printedName1]],
     },
     {
-      range: "DV!E48:R48",
+      range: "DV!E53:R53",
       values: [[formData.position1]],
     },
     {
-      range: "DV!W46:AG47",
+      range: "DV!W51:AG52",
       values: [[formData.printedName2]],
     },
     {
-      range: "DV!W48:AG48",
+      range: "DV!W53:AG53",
       values: [[formData.position2]],
     },
     {
-      range: "DV!S55:AA56",
+      range: "DV!S60:AA61",
       values: [[formData.payeeName]],
     },
     {
       range: "DV!B27:AF27",
       values: [[formData.nameOfVicePresident]],
-    },
+    }
   ];
+
+  // Clear the accounting entry area (rows 33–40, columns A:W)
+  for (let row = 33; row <= 40; row++) {
+    data.push({
+      range: `DV!A${row}:W${row}`,
+      values: [[
+        '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''
+      ]], // 23 columns (A:W)
+    });
+  }
 
   // Add mode of payment checkbox
   // First, clear all checkbox cells
   const checkboxCells = ["G11", "L11", "F11", "S11"];
   checkboxCells.forEach((cell) => {
-    updates.push({
+    data.push({
       range: `DV!${cell}`,
       values: [[""]], // Clear the cell
     });
@@ -218,15 +238,15 @@ export const formatDVFormData = (formData, fundCluster, dvNumber) => {
       ? "S11"
       : "S11";
 
-  updates.push({
+  data.push({
     range: `DV!${modeOfPaymentCell}`,
     values: [["✓"]],
   });
 
   // First, clear all checkbox cells
-  const checkboxCells2 = ["B37", "B39", "B41"];
+  const checkboxCells2 = ["B42", "B44", "B46"];
   checkboxCells2.forEach((cell) => {
-    updates.push({
+    data.push({
       range: `DV!${cell}`,
       values: [[""]], // Clear the cell
     });
@@ -235,21 +255,50 @@ export const formatDVFormData = (formData, fundCluster, dvNumber) => {
   // Then set the selected checkbox
   const certified =
     formData.certified === "Cash Available"
-      ? "B37"
+      ? "B42"
       : formData.certified ===
         "Subject to Authority to Debit Account (when applicable)"
-      ? "B39"
+      ? "B44"
       : formData.certified ===
         "Supporting documents complete and amount claimed"
-      ? "B41"
-      : "B41";
+      ? "B46"
+      : "B46";
 
-  updates.push({
+  data.push({
     range: `DV!${certified}`,
     values: [["✓"]],
   });
 
-  return updates;
+  // Add entries data
+  let rowIndex = 33; // Starting row for entries
+  formData.entries.forEach((entry) => {
+    // Add credit entry
+    data.push({
+      range: `DV!A${rowIndex}:R${rowIndex}`,
+      values: [[entry.credit.accountTitle]],
+    });
+    data.push({
+      range: `DV!S${rowIndex}:W${rowIndex}`,
+      values: [[entry.credit.uacsCode]],
+    });
+
+    // Add debit entries
+    entry.debits.forEach((debit) => {
+      rowIndex++;
+      data.push({
+        range: `DV!A${rowIndex}:R${rowIndex}`,
+        values: [[`_____ ${debit.accountTitle}`]], // Indent debit
+      });
+      data.push({
+        range: `DV!S${rowIndex}:W${rowIndex}`,
+        values: [[debit.uacsCode]],
+      });
+    });
+
+    rowIndex++; // Add space between entries
+  });
+
+  return data;
 };
 
 // Read data from Google Sheets

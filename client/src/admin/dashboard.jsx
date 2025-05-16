@@ -75,23 +75,23 @@ function Dashboard() {
   useEffect(() => {
     const loadUserProfile = async () => {
       try {
-        // Get user info from localStorage
-        const userEmail = localStorage.getItem('userEmail');
-        const userPicture = localStorage.getItem('userPicture');
+    // Get user info from localStorage
+    const userEmail = localStorage.getItem('userEmail');
+    const userPicture = localStorage.getItem('userPicture');
         const userName = localStorage.getItem('userName');
-        const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
 
-        if (!userEmail) {
-          console.error('No user information found');
-          navigate('/');
-          return;
-        }
+    if (!userEmail) {
+      console.error('No user information found');
+      navigate('/');
+      return;
+    }
 
         console.log('Profile picture URL:', userPicture || userInfo.picture);
         console.log('User Info:', userInfo);
 
         // Set the profile information
-        setUserProfile({
+    setUserProfile({
           picture: userPicture || userInfo.picture || '',
           name: userName || userInfo.name || '',
           email: userEmail || userInfo.email || ''
@@ -322,7 +322,7 @@ function Dashboard() {
           >
             <ProfileImage imageUrl={userProfile.picture} />
           </button>
-          <div className="notification-container">
+         <div className="notification-container">
             <button className="notification-button" onClick={() => setShowNotifications(!showNotifications)}>
               <FaBell />
               {unreadNotifications > 0 && (
