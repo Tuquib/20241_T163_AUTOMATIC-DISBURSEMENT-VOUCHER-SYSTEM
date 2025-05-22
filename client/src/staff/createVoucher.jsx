@@ -43,8 +43,6 @@ const CreateVoucher = () => {
     checkADANo: "",
     officialReceiptNo: "",
     bankNameAndAccountNo: "",
-    calculatorInput: "",
-    operation: "",
   });
 
   // Modify the entries state structure to support multiple debits per credit
@@ -53,12 +51,14 @@ const CreateVoucher = () => {
       id: 1,
       credit: {
         accountTitle: "",
-        uacsCode: ""
+        uacsCode: "",
+        amount: ""
       },
       debits: [
         {
           accountTitle: "",
-          uacsCode: ""
+          uacsCode: "",
+          amount: ""
         }
       ]
     }
@@ -82,6 +82,55 @@ const CreateVoucher = () => {
 
   // Add new state for storing debit accounts for each entry
   const [entryDebitAccounts, setEntryDebitAccounts] = useState({});
+
+  // Function to reset all form data states
+  const resetFormState = () => {
+    setFormData({
+      date: "",
+      modeOfPayment: "MDS Check",
+      payeeName: "",
+      address: "",
+      amountDue: "",
+      responsibilityCenter: "",
+      mfoPap: "",
+      amount: "",
+      totalAmount: "",
+      tinNumber: "",
+      bursNumber: "",
+      particulars: "",
+      nameOfVicePresident: "DR. HAZEL JEAN M. ABEJUELA",
+      certified: "Cash Available",
+      approvedOfPayment: "",
+      printedName1: "JUDITHA G. PAGARAN",
+      position1: "OIC - University Accountant",
+      printedName2: "JOY M. MIRASOL",
+      position2: "University President",
+      checkADANo: "",
+      officialReceiptNo: "",
+      bankNameAndAccountNo: "",
+    });
+    setEntries([
+      {
+        id: 1,
+        credit: {
+          accountTitle: "",
+          uacsCode: "",
+          amount: ""
+        },
+        debits: [
+          {
+            accountTitle: "",
+            uacsCode: "",
+            amount: ""
+          }
+        ]
+      }
+    ]);
+    setDvNumber(null);
+    setFundCluster(null);
+    setEntryDebitAccounts({});
+    setError(null); // Also clear any previous errors
+  };
 
   // Utility functions
   const numberToWords = (num) => {
@@ -205,42 +254,6 @@ const CreateVoucher = () => {
     navigate("/");
   };
 
-  const handleAmountChange = (e) => {
-    const value = e.target.value;
-    setFormData((prev) => ({
-      ...prev,
-      amount: value,
-      totalAmount: value,
-    }));
-  };
-
-  const handleCalculatorInput = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      calculatorInput: e.target.value,
-    }));
-  };
-
-  const handleOperation = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      operation: e.target.value,
-    }));
-  };
-
-  const handleCalculate = () => {
-    const newTotal = calculateTotal(
-      formData.amount,
-      formData.operation,
-      formData.calculatorInput
-    );
-
-    setFormData((prev) => ({
-      ...prev,
-      totalAmount: newTotal.toString(),
-    }));
-  };
-
   const handleAccountTitleChange = async (e) => {
     const accountTitle = e.target.value;
     setFormData(prev => ({ ...prev, accountTitle }));
@@ -288,12 +301,14 @@ const CreateVoucher = () => {
       id: newId,
       credit: {
         accountTitle: "",
-        uacsCode: ""
+        uacsCode: "",
+        amount: ""
       },
       debits: [
         {
           accountTitle: "",
-          uacsCode: ""
+          uacsCode: "",
+          amount: ""
         }
       ]
     }]);
@@ -321,7 +336,8 @@ const CreateVoucher = () => {
             ...entry.debits,
             {
               accountTitle: "",
-              uacsCode: ""
+              uacsCode: "",
+              amount: ""
             }
           ]
         };
@@ -363,12 +379,13 @@ const CreateVoucher = () => {
                 ...entry,
                 credit: {
                   accountTitle: value,
-                  uacsCode: response.data.creditAccount.uacsCode
+                  uacsCode: response.data.creditAccount.uacsCode,
+                  amount: entry.credit.amount || ""
                 },
-                // Reset all debits when credit changes
                 debits: [{
                   accountTitle: "",
-                  uacsCode: ""
+                  uacsCode: "",
+                  amount: ""
                 }]
               };
             }
@@ -393,7 +410,8 @@ const CreateVoucher = () => {
               const newDebits = [...entry.debits];
               newDebits[debitIndex] = {
                 accountTitle: value,
-                uacsCode: selectedDebit.uacsCode
+                uacsCode: selectedDebit.uacsCode,
+                amount: newDebits[debitIndex]?.amount || ""
               };
               return {
                 ...entry,
@@ -421,11 +439,13 @@ const CreateVoucher = () => {
                 ...entry,
                 credit: {
                   accountTitle: "",
-                  uacsCode: ""
+                  uacsCode: "",
+                  amount: ""
                 },
                 debits: [{
                   accountTitle: "",
-                  uacsCode: ""
+                  uacsCode: "",
+                  amount: ""
                 }]
               };
             }
@@ -440,6 +460,31 @@ const CreateVoucher = () => {
         setLoading(false);
         setLoadingMessage("");
       }
+    } else if (field === 'amount') {
+      setEntries(prev => prev.map(entry => {
+        if (entry.id === id) {
+          if (type === 'credit') {
+            return {
+              ...entry,
+              credit: {
+                ...entry.credit,
+                amount: value
+              }
+            };
+          } else {
+            const newDebits = [...entry.debits];
+            newDebits[debitIndex] = {
+              ...newDebits[debitIndex],
+              amount: value
+            };
+            return {
+              ...entry,
+              debits: newDebits
+            };
+          }
+        }
+        return entry;
+      }));
     }
   };
 
@@ -572,11 +617,13 @@ const CreateVoucher = () => {
         entries: entries.map(entry => ({
           credit: {
             accountTitle: entry.credit.accountTitle || "",
-            uacsCode: entry.credit.uacsCode || ""
+            uacsCode: entry.credit.uacsCode || "",
+            amount: entry.credit.amount || ""
           },
           debits: entry.debits.map(debit => ({
             accountTitle: debit.accountTitle || "",
-            uacsCode: debit.uacsCode || ""
+            uacsCode: debit.uacsCode || "",
+            amount: debit.amount || ""
           }))
         }))
       };
@@ -726,6 +773,24 @@ const CreateVoucher = () => {
     setDvNumber(e.target.value);
   };
 
+  // Add this new function to calculate total amount from entries
+  const calculateTotalFromEntries = () => {
+    let total = 0;
+    entries.forEach(entry => {
+      // Add credit amount
+      if (entry.credit.amount) {
+        total += parseFloat(entry.credit.amount) || 0;
+      }
+      // Subtract debit amounts
+      entry.debits.forEach(debit => {
+        if (debit.amount) {
+          total -= parseFloat(debit.amount) || 0;
+        }
+      });
+    });
+    return total;
+  };
+
   // Effects
   useEffect(() => {
     const fetchData = async () => {
@@ -737,20 +802,32 @@ const CreateVoucher = () => {
 
         await initGoogleAPI();
 
-        const [dvResponse, fcResponse, taskResponse] = await Promise.all([
-          axios.get("http://localhost:8000/api/nextDvNumber"),
-          axios.get("http://localhost:8000/api/nextFundCluster"),
-          axios.get(`http://localhost:8000/api/task/${taskID}`),
-        ]);
+        if (taskID) {
+          // If taskID exists, fetch task data and populate the form
+          const [dvResponse, fcResponse, taskResponse] = await Promise.all([
+            axios.get("http://localhost:8000/api/nextDvNumber"),
+            axios.get("http://localhost:8000/api/nextFundCluster"),
+            axios.get(`http://localhost:8000/api/task/${taskID}`),
+          ]);
 
-        setDvNumber(dvResponse.data.dvNumber);
-        setFundCluster(fcResponse.data.fundCluster);
+          setDvNumber(dvResponse.data.dvNumber);
+          setFundCluster(fcResponse.data.fundCluster);
 
-        setFormData((prev) => ({
-          ...prev,
-          date: new Date(taskResponse.data.date).toISOString().split("T")[0],
-          payeeName: taskResponse.data.payeeName,
-        }));
+          setFormData((prev) => ({
+            ...prev,
+            date: new Date(taskResponse.data.date).toISOString().split("T")[0],
+            payeeName: taskResponse.data.payeeName,
+          }));
+        } else {
+          // If no taskID, reset form and fetch new DV/Fund Cluster numbers
+          resetFormState();
+          const [dvResponse, fcResponse] = await Promise.all([
+            axios.get("http://localhost:8000/api/nextDvNumber"),
+            axios.get("http://localhost:8000/api/nextFundCluster"),
+          ]);
+          setDvNumber(dvResponse.data.dvNumber);
+          setFundCluster(fcResponse.data.fundCluster);
+        }
       } catch (err) {
         console.error("Error fetching data:", err);
         setError("Failed to load data. Please try again.");
@@ -759,13 +836,6 @@ const CreateVoucher = () => {
 
     fetchData();
   }, [taskID]);
-
-  useEffect(() => {
-    setFormData((prev) => ({
-      ...prev,
-      totalAmount: prev.amount,
-    }));
-  }, [formData.amount]);
 
   useEffect(() => {
     if (formData.totalAmount) {
@@ -1040,37 +1110,8 @@ const CreateVoucher = () => {
                 <input
                   type="number"
                   name="amount"
-                  onChange={handleAmountChange}
+                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                   value={formData.amount}
-                  
-                />
-              </div>
-              {/* Calculator Section */}
-              <div className="calculator-section">
-                <select value={formData.operation} onChange={handleOperation}>
-                  <option></option>
-                  <option value="+">+</option>
-                  <option value="-">-</option>
-                  <option value="*">×</option>
-                  <option value="/">÷</option>
-                </select>
-                <input
-                  type="number"
-                  placeholder="Enter value"
-                  value={formData.calculatorInput}
-                  onChange={handleCalculatorInput}
-                />
-                <button type="button" onClick={handleCalculate}>
-                  Calculate
-                </button>
-              </div>
-              <div>
-                <label>Total Amount:</label>
-                <input
-                  type="number"
-                  name="totalAmount"
-                  value={formData.totalAmount}
-                  readOnly
                 />
               </div>
               <div>
@@ -1122,7 +1163,6 @@ const CreateVoucher = () => {
                           <select
                             value={entry.credit.accountTitle}
                             onChange={(e) => handleEntryChange(entry.id, 'credit', 'accountTitle', e.target.value)}
-                            
                           >
                             <option value="">Select Debit</option>
                             {creditOptions.map((credit, idx) => (
@@ -1140,9 +1180,17 @@ const CreateVoucher = () => {
                             readOnly
                           />
                         </div>
+                        <div>
+                          <label>Amount:</label>
+                          <input
+                            type="number"
+                            value={entry.credit.amount}
+                            onChange={(e) => handleEntryChange(entry.id, 'credit', 'amount', e.target.value)}
+                            placeholder="Enter amount"
+                          />
+                        </div>
                       </div>
 
-                      {/* Only show debit section if there are debit accounts available */}
                       {entryDebitAccounts[entry.id]?.length > 0 && (
                         <div className="debit-section">
                           <h5>Credit</h5>
@@ -1165,7 +1213,6 @@ const CreateVoucher = () => {
                                 <select
                                   value={debit.accountTitle}
                                   onChange={(e) => handleEntryChange(entry.id, 'debit', 'accountTitle', e.target.value, index)}
-                                  
                                 >
                                   <option value="">Select Credit</option>
                                   {entryDebitAccounts[entry.id]?.map((account, idx) => (
@@ -1181,6 +1228,15 @@ const CreateVoucher = () => {
                                   type="text"
                                   value={debit.uacsCode}
                                   readOnly
+                                />
+                              </div>
+                              <div>
+                                <label>Amount:</label>
+                                <input
+                                  type="number"
+                                  value={debit.amount}
+                                  onChange={(e) => handleEntryChange(entry.id, 'debit', 'amount', e.target.value, index)}
+                                  placeholder="Enter amount"
                                 />
                               </div>
                             </div>
@@ -1205,6 +1261,15 @@ const CreateVoucher = () => {
                 >
                   Add Another Entry
                 </button>
+              </div>
+              <div>
+                <label>Total Amount:</label>
+                <input
+                  type="number"
+                  name="totalAmount"
+                  value={formData.totalAmount}
+                  onChange={(e) => setFormData({ ...formData, totalAmount: e.target.value })}
+                />
               </div>
               <div>
                 <label>Certified:</label>

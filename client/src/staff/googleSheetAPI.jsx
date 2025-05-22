@@ -159,27 +159,15 @@ export const formatDVFormData = (formData, fundCluster, dvNumber) => {
       values: [[formData.amount]],
     },
     {
-      range: "DV!AD20",
-      values: [[formData.operation]],
-    },
-    {
-      range: "DV!AE20:AG20",
-      values: [[formData.calculatorInput]],
-    },
-    {
       range: "DV!AB24:AG24",
-      values: [[formData.totalAmount]],
+      values: [[formData.amount]],
     },
     {
       range: "DV!S42:AG48",
       values: [[formData.approvedOfPayment]],
     },
     {
-      range: "DV!X33:AB34",
-      values: [[formData.totalAmount]],
-    },
-    {
-      range: "DV!AC33:AG34",
+      range: "DV!AC40:AG40",
       values: [[formData.totalAmount]],
     },
     {
@@ -209,12 +197,12 @@ export const formatDVFormData = (formData, fundCluster, dvNumber) => {
   ];
 
   // Clear the accounting entry area (rows 33–40, columns A:W)
-  for (let row = 33; row <= 40; row++) {
+  for (let row = 33; row <= 39; row++) {
     data.push({
-      range: `DV!A${row}:W${row}`,
+      range: `DV!A${row}:AG${row}`,
       values: [[
-        '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''
-      ]], // 23 columns (A:W)
+        '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''
+      ]], // 33 columns (A:AG)
     });
   }
 
@@ -281,6 +269,11 @@ export const formatDVFormData = (formData, fundCluster, dvNumber) => {
       range: `DV!S${rowIndex}:W${rowIndex}`,
       values: [[entry.credit.uacsCode]],
     });
+    // Add credit amount to Debit column in Google Sheet
+    data.push({
+      range: `DV!X${rowIndex}:AB${rowIndex}`,
+      values: [[entry.credit.amount]],
+    });
 
     // Add debit entries
     entry.debits.forEach((debit) => {
@@ -292,6 +285,11 @@ export const formatDVFormData = (formData, fundCluster, dvNumber) => {
       data.push({
         range: `DV!S${rowIndex}:W${rowIndex}`,
         values: [[debit.uacsCode]],
+      });
+      // Add debit amount to Credit column in Google Sheet
+      data.push({
+        range: `DV!AC${rowIndex}:AG${rowIndex}`,
+        values: [[debit.amount]],
       });
     });
 
